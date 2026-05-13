@@ -1,0 +1,5867 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>生物医学刷题 v1.2.1</title>
+  <style>
+    :root {
+      --primary: #4A90D9;
+      --success: #52C41A;
+      --error: #FF4D4F;
+      --warning: #FAAD14;
+      --anatomy: #4A90D9;
+      --physiology: #52C41A;
+      --biochemistry: #FF9C00;
+      --pathology: #FF4D4F;
+      --pathophys: #722ED1;
+      --pharmacology: #13C2C2;
+      --bg: #F5F7FA;
+      --card-bg: #FFFFFF;
+      --text: #333;
+      --text-secondary: #666;
+      --border: #E8E8E8;
+    }
+    
+    [data-theme="dark"] {
+      --bg: #1A1A2E;
+      --card-bg: #16213E;
+      --text: #E8E8E8;
+      --text-secondary: #A0A0A0;
+      --border: #2D3748;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+    
+    /* Header */
+    .header {
+      background: linear-gradient(135deg, var(--primary), #6B5DD3);
+      color: white;
+      padding: 16px 20px;
+      position: relative;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    
+    .header-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 13px;
+    }
+    
+    .header-stats span {
+      opacity: 0.9;
+    }
+    
+    /* Progress Ring */
+    .progress-ring-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      margin: 12px 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .progress-ring {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+    
+    .progress-ring svg {
+      transform: rotate(-90deg);
+      width: 80px;
+      height: 80px;
+    }
+    
+    .progress-ring circle {
+      fill: none;
+      stroke-width: 8;
+    }
+    
+    .progress-ring .bg {
+      stroke: var(--border);
+    }
+    
+    .progress-ring .progress {
+      stroke-linecap: round;
+      transition: stroke-dashoffset 0.5s ease;
+    }
+    
+    .progress-ring .text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+    
+    .progress-ring .percent {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    
+    .progress-ring .label {
+      font-size: 10px;
+      color: var(--text-secondary);
+    }
+    
+    .progress-details {
+      flex: 1;
+    }
+    
+    .progress-details h3 {
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+    
+    .progress-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .progress-bar-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+    }
+    
+    .progress-bar-item .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    
+    .progress-bar-item .bar {
+      flex: 1;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-bar-item .bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    
+    .progress-bar-item .count {
+      min-width: 36px;
+      text-align: right;
+      color: var(--text-secondary);
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      padding: 0 16px;
+      gap: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    
+    .tabs::-webkit-scrollbar {
+      display: none;
+    }
+    
+    .tab {
+      padding: 8px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 13px;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tab.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    /* Question Type Filter */
+    .filter-row {
+      display: flex;
+      padding: 12px 16px;
+      gap: 8px;
+    }
+    
+    .filter-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .filter-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    /* Mode Toggle */
+    .mode-row {
+      display: flex;
+      padding: 0 16px 12px;
+      gap: 8px;
+    }
+    
+    .mode-btn {
+      flex: 1;
+      padding: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 13px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .mode-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    
+    .mode-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+    
+    /* Question Card */
+    .question-container {
+      padding: 0 16px 100px;
+    }
+    
+    .question-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .question-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .question-subject {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      color: white;
+    }
+    
+    .question-id {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .question-content {
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+    
+    .question-stars {
+      display: flex;
+      gap: 2px;
+      margin-bottom: 12px;
+    }
+    
+    .question-stars .star {
+      color: var(--warning);
+      font-size: 12px;
+    }
+    
+    .question-stars .star.empty {
+      opacity: 0.3;
+    }
+    
+    /* Options */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    .option {
+      padding: 14px 16px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .option:hover {
+      border-color: var(--primary);
+    }
+    
+    .option .letter {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    
+    .option.selected {
+      border-color: var(--primary);
+      background: rgba(74, 144, 217, 0.1);
+    }
+    
+    .option.correct {
+      border-color: var(--success);
+      background: rgba(82, 196, 26, 0.1);
+    }
+    
+    .option.wrong {
+      border-color: var(--error);
+      background: rgba(255, 77, 79, 0.1);
+    }
+    
+    .option.disabled {
+      pointer-events: none;
+      opacity: 0.7;
+    }
+    
+    /* Judge Options */
+    .judge-options {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .judge-option {
+      flex: 1;
+      padding: 16px;
+      text-align: center;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 2px solid var(--border);
+      background: var(--bg);
+      transition: all 0.2s;
+    }
+    
+    .judge-option:hover {
+      border-color: var(--primary);
+    }
+    
+    .judge-option.selected {
+      border-color: var(--primary);
+    }
+    
+    .judge-option.correct {
+      border-color: var(--success);
+      background: rgba(82, 196, 26, 0.1);
+    }
+    
+    .judge-option.wrong {
+      border-color: var(--error);
+      background: rgba(255, 77, 79, 0.1);
+    }
+    
+    /* Analysis */
+    .analysis {
+      margin-top: 16px;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(74, 144, 217, 0.05), rgba(107, 93, 211, 0.05));
+      border-radius: 10px;
+      border-left: 4px solid var(--primary);
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .analysis-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    
+    .analysis-content {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+    
+    .analysis-result {
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .analysis-result.correct {
+      background: rgba(82, 196, 26, 0.1);
+      color: var(--success);
+    }
+    
+    .analysis-result.wrong {
+      background: rgba(255, 77, 79, 0.1);
+      color: var(--error);
+    }
+    
+    /* Action Buttons */
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .action-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .action-btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .action-btn.secondary {
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .action-btn.collected {
+      background: var(--warning);
+      color: white;
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--card-bg);
+      display: flex;
+      border-top: 1px solid var(--border);
+      padding: 8px 0;
+      padding-bottom: max(8px, env(safe-area-inset-bottom));
+      z-index: 100;
+    }
+    
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .nav-item svg {
+      width: 24px;
+      height: 24px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    
+    .nav-item span {
+      font-size: 11px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+    
+    .nav-item.active svg {
+      color: var(--primary);
+    }
+    
+    .nav-item.active span {
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    .nav-badge {
+      position: absolute;
+      top: 2px;
+      right: calc(50% - 20px);
+      background: var(--error);
+      color: white;
+      font-size: 10px;
+      min-width: 16px;
+      height: 16px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+    
+    /* Page Sections */
+    .page {
+      display: none;
+    }
+    
+    .page.active {
+      display: block;
+    }
+    
+    /* Case Page */
+    .case-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      margin: 12px 16px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .case-header {
+      padding: 16px;
+      background: linear-gradient(135deg, var(--primary), #6B5DD3);
+      color: white;
+    }
+    
+    .case-header h3 {
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .case-subjects {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    
+    .case-subject-tag {
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 12px;
+      font-size: 11px;
+    }
+    
+    .case-body {
+      padding: 16px;
+    }
+    
+    .case-description {
+      font-size: 14px;
+      line-height: 1.8;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding: 12px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+    
+    .case-question {
+      margin-bottom: 16px;
+    }
+    
+    .case-question-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .case-question-title .num {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+    
+    .case-answer-toggle {
+      padding: 12px 16px;
+      background: var(--bg);
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: var(--primary);
+      transition: all 0.2s;
+    }
+    
+    .case-answer-toggle:hover {
+      background: rgba(74, 144, 217, 0.1);
+    }
+    
+    .case-answer-toggle svg {
+      transition: transform 0.3s;
+    }
+    
+    .case-answer-toggle.expanded svg {
+      transform: rotate(180deg);
+    }
+    
+    .case-answer {
+      padding: 12px;
+      background: rgba(82, 196, 26, 0.05);
+      border-radius: 8px;
+      margin-top: 8px;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--success);
+      display: none;
+    }
+    
+    .case-answer.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+    
+    /* Error List Page */
+    .list-header {
+      padding: 12px 16px;
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .list-header h3 {
+      font-size: 15px;
+    }
+    
+    .list-header .count {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: var(--bg);
+      padding: 4px 10px;
+      border-radius: 12px;
+    }
+    
+    .list-item {
+      background: var(--card-bg);
+      margin: 8px 16px;
+      border-radius: 10px;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .list-item:hover {
+      transform: translateX(4px);
+    }
+    
+    .list-item-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .list-item-content {
+      font-size: 14px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .list-item-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    /* Collect Page */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+    
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+    
+    .empty-state h4 {
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+    
+    .empty-state p {
+      font-size: 14px;
+    }
+    
+    /* Stats Page */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      padding: 12px 16px;
+    }
+    
+    .stat-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .chart-section {
+      background: var(--card-bg);
+      margin: 12px 16px;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    
+    .chart-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    .subject-chart {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .subject-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .subject-row .label {
+      width: 50px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    
+    .subject-row .bar-container {
+      flex: 1;
+      height: 24px;
+      background: var(--bg);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .subject-row .bar {
+      height: 100%;
+      border-radius: 12px;
+      transition: width 0.5s ease;
+      display: flex;
+      align-items: center;
+      padding-left: 10px;
+    }
+    
+    .subject-row .bar .text {
+      font-size: 11px;
+      color: white;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+    
+    .subject-row .percent {
+      width: 45px;
+      text-align: right;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    /* 未刷标签 */
+    .not-done-tag {
+      display: inline-block;
+      background: #FF9C00;
+      color: white;
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-right: 6px;
+      font-weight: 600;
+    }
+    
+    /* 显示答案按钮 */
+    .reveal-btn {
+      background: #722ED1 !important;
+      color: white !important;
+    }
+    
+    /* Theme Toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      transform: translateY(-50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 99;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .theme-toggle svg {
+      width: 20px;
+      height: 20px;
+      color: var(--text);
+    }
+    
+    /* Loading */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 40px;
+    }
+    
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <div class="header">
+    <h1>🧬 生物医学大综合刷题</h1>
+    <div class="header-stats">
+      <span>📚 <span id="totalQuestions">350</span> 题</span>
+      <span>📊 <span id="todayCount">0/0</span> 完成度</span>
+      <span>🎯 <span id="accuracy">0%</span> 正确率</span>
+    </div>
+    <!-- Theme Toggle -->
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
+    </div>
+  </div>
+  
+  <!-- Home Page (Dashboard) -->
+  <div id="homePage" class="page active">
+    <!-- Progress Ring -->
+    <div class="progress-ring-container">
+      <div class="progress-ring">
+        <svg>
+          <circle class="bg" cx="40" cy="40" r="32"></circle>
+          <circle class="progress" id="mainProgress" cx="40" cy="40" r="32" stroke-dasharray="201" stroke-dashoffset="201"></circle>
+        </svg>
+        <div class="text">
+          <div class="percent" id="mainPercent">0%</div>
+          <div class="label">完成度</div>
+        </div>
+      </div>
+      <div class="progress-details">
+        <h3>各科进度</h3>
+        <div class="progress-bars" id="progressBars"></div>
+      </div>
+    </div>
+
+    <!-- Subject Cards -->
+    <div style="padding: 0 16px; margin-top: 12px;">
+      <h3 style="font-size: 16px; margin-bottom: 12px;">📚 选择学科开始刷题</h3>
+      <div id="subjectCards" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;"></div>
+    </div>
+
+    <!-- Start All Button -->
+    <div style="padding: 16px;">
+      <button onclick="startQuiz('all')" style="width:100%; padding: 14px; background: linear-gradient(135deg, #4A90D9, #6B5DD3); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer;">
+        🚀 开始刷题（全部学科）
+      </button>
+    </div>
+  </div>
+
+  <!-- Quiz Page (separate from home) -->
+  <div id="quizPage" class="page">
+    <!-- Back button -->
+    <div style="padding: 8px 16px; display: flex; align-items: center; gap: 8px;">
+      <button onclick="switchPage('homePage')" style="background: none; border: none; color: var(--primary); font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 6px 0;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        返回主页
+      </button>
+    </div>
+
+    <!-- Subject Tabs -->
+    <div class="tabs" id="subjectTabs"></div>
+
+    <!-- Question Type Filter -->
+    <div class="filter-row">
+      <div class="filter-btn active" data-type="all" onclick="filterByType('all')">全部题目</div>
+      <div class="filter-btn" data-type="choice" onclick="filterByType('choice')">选择题</div>
+      <div class="filter-btn" data-type="judge" onclick="filterByType('judge')">判断题</div>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-row">
+      <div class="mode-btn active" data-mode="order" onclick="setMode('order')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="8" y1="6" x2="21" y2="6"></line>
+          <line x1="8" y1="12" x2="21" y2="12"></line>
+          <line x1="8" y1="18" x2="21" y2="18"></line>
+          <line x1="3" y1="6" x2="3.01" y2="6"></line>
+          <line x1="3" y1="12" x2="3.01" y2="12"></line>
+          <line x1="3" y1="18" x2="3.01" y2="18"></line>
+        </svg>
+        顺序刷题
+      </div>
+      <div class="mode-btn" data-mode="random" onclick="setMode('random')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="16 3 21 3 21 8"></polyline>
+          <line x1="4" y1="20" x2="21" y2="3"></line>
+          <polyline points="21 16 21 21 16 21"></polyline>
+          <line x1="15" y1="15" x2="21" y2="21"></line>
+          <line x1="4" y1="4" x2="9" y2="9"></line>
+        </svg>
+        随机练习
+      </div>
+    </div>
+
+    <!-- Question Container -->
+    <div class="question-container" id="questionContainer"></div>
+  </div>
+  
+  <!-- Case Page -->
+  <div id="casePage" class="page">
+    <div id="caseList"></div>
+  </div>
+  
+  <!-- Error List Page -->
+  <div id="errorPage" class="page">
+    <div class="list-header">
+      <h3>📝 错题本</h3>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="count" id="errorCount">0 题</div>
+      </div>
+    </div>
+    <div id="errorList"></div>
+  </div>
+  
+  <!-- Collect Page -->
+  <div id="collectPage" class="page">
+    <div class="list-header">
+      <h3>⭐ 收藏夹</h3>
+      <div class="count" id="collectCount">0 题</div>
+    </div>
+    <div id="collectList"></div>
+  </div>
+  
+  <!-- Stats Page -->
+  <div id="statsPage" class="page">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="value" id="statTotal">0%</div>
+        <div class="label">完成度</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statCorrect">0</div>
+        <div class="label">正确数</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statAccuracy">0%</div>
+        <div class="label">正确率</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statToday">0/0</div>
+        <div class="label">已完成</div>
+      </div>
+    </div>
+    
+    <div class="chart-section">
+      <div class="chart-title">📊 各科正确率</div>
+      <div class="subject-chart" id="subjectChart"></div>
+    </div>
+    
+    <div style="margin-top: 24px; padding: 16px; text-align: center;">
+      <button onclick="confirmResetProgress()" style="background: #FF4D4F; color: white; border: none; border-radius: 8px; padding: 12px 32px; font-size: 15px; font-weight: 600; cursor: pointer;">🗑️ 重置全部进度</button>
+      <p style="font-size: 12px; color: var(--text-secondary); margin-top: 8px;">清空所有做题记录、错题和收藏</p>
+    </div>
+  </div>
+  
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <div class="nav-item active" data-page="homePage" onclick="switchPage('homePage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+      </svg>
+      <span>首页</span>
+    </div>
+    <div class="nav-item" data-page="casePage" onclick="switchPage('casePage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+        <line x1="16" y1="13" x2="8" y2="13"></line>
+        <line x1="16" y1="17" x2="8" y2="17"></line>
+        <polyline points="10 9 9 9 8 9"></polyline>
+      </svg>
+      <span>大题</span>
+    </div>
+    <div class="nav-item" data-page="errorPage" onclick="switchPage('errorPage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+      <span>错题</span>
+      <span class="nav-badge" id="errorBadge" style="display: none;">0</span>
+    </div>
+    <div class="nav-item" data-page="collectPage" onclick="switchPage('collectPage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+      </svg>
+      <span>收藏</span>
+    </div>
+    <div class="nav-item" data-page="statsPage" onclick="switchPage('statsPage')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="20" x2="18" y2="10"></line>
+        <line x1="12" y1="20" x2="12" y2="4"></line>
+        <line x1="6" y1="20" x2="6" y2="14"></line>
+      </svg>
+      <span>统计</span>
+    </div>
+  </div>
+  
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+  
+  <!-- ==================== DATA SECTION ==================== -->
+  <script>
+// ========================================
+// 解剖学题目 - anatomy.js
+// ========================================
+
+const ANATOMY_QUESTIONS = [
+  // 选择题 1-50
+  {
+    id: 1,
+    subject: "anatomy",
+    type: "choice",
+    question: "臂丛神经的五大分支中，桡神经来自",
+    options: ["外侧束", "内侧束", "后束", "上干", "下干"],
+    answer: "C",
+    analysis: "臂丛五大分支按桡侧吻顺序：外正内尺，后裹腋桡。桡神经来自后束，腋神经也来自后束。记忆口诀：外正内尺，后裹腋桡（外侧束→正中/肌皮；后束→腋神经/桡神经）。",
+    stars: 3
+  },
+  {
+    id: 2,
+    subject: "anatomy",
+    type: "choice",
+    question: "三角肌收缩可使肩关节",
+    options: ["内收", "外展", "旋内", "旋外", "后伸"],
+    answer: "B",
+    analysis: "三角肌使肩关节外展，主要由腋神经支配。臂丛神经支配肩关节的主要肌肉：三角肌（腋神经）、冈上肌/冈下肌/小圆肌（腋神经/肩胛上神经）。",
+    stars: 2
+  },
+  {
+    id: 3,
+    subject: "anatomy",
+    type: "choice",
+    question: "肌皮神经支配的肌肉是",
+    options: ["三角肌", "肱二头肌", "肱三头肌", "肱桡肌", "背阔肌"],
+    answer: "B",
+    analysis: "肌皮神经支配肱二头肌、肱肌和喙肱肌。正中神经支配前臂旋前肌群和部分手肌；尺神经支配手肌内侧群和小鱼际肌；桡神经支配上肢伸肌群。",
+    stars: 2
+  },
+  {
+    id: 4,
+    subject: "anatomy",
+    type: "choice",
+    question: "12对脑神经中，唯一从脑干背侧面入脑的是",
+    options: ["动眼神经", "滑车神经", "展神经", "面神经", "舌下神经"],
+    answer: "B",
+    analysis: "滑车神经是唯一从背侧面入脑干的脑神经，连于中脑背面。其他脑神经均从腹侧面入脑。记忆：第4对滑车神经，唯一背侧入脑。",
+    stars: 3
+  },
+  {
+    id: 5,
+    subject: "anatomy",
+    type: "choice",
+    question: "与脑干相连的脑神经共有",
+    options: ["8对", "9对", "10对", "11对", "12对"],
+    answer: "C",
+    analysis: "除嗅神经（连端脑）和视神经（连间脑）外，其余10对脑神经均与脑干相连。包括：Ⅲ动眼神经（中脑）、Ⅳ滑车神经（中脑背面）、Ⅴ三叉神经（脑桥）、Ⅵ展神经（脑桥）、Ⅶ面神经（脑桥）、Ⅷ前庭蜗神经（脑桥）、Ⅸ舌咽神经（延髓）、Ⅹ迷走神经（延髓）、Ⅺ副神经（延髓）、Ⅻ舌下神经（延髓）。",
+    stars: 3
+  },
+  {
+    id: 6,
+    subject: "anatomy",
+    type: "choice",
+    question: "第1躯体运动中枢位于",
+    options: ["中央后回及中央旁小叶后部", "中央前回及中央旁小叶前部", "颞横回", "距状裂周围", "额下回后部"],
+    answer: "B",
+    analysis: "第1躯体运动中枢位于中央前回及中央旁小叶前部（4、6区），管理对侧躯体随意运动。中央后回是第1躯体感觉中枢。",
+    stars: 3
+  },
+  {
+    id: 7,
+    subject: "anatomy",
+    type: "choice",
+    question: "第1躯体感觉中枢位于",
+    options: ["中央后回及中央旁小叶后部", "中央前回及中央旁小叶前部", "颞横回", "距状裂周围", "颞上回后部"],
+    answer: "A",
+    analysis: "第1躯体感觉中枢位于中央后回及中央旁小叶后部（3、1、2区），接受对侧躯体的浅感觉和深感觉。",
+    stars: 3
+  },
+  {
+    id: 8,
+    subject: "anatomy",
+    type: "choice",
+    question: "传导躯干、四肢深感觉（位置觉、运动觉、震动觉）的纤维束是",
+    options: ["脊髓丘脑束", "内侧丘系", "三叉丘脑束", "视束", "外侧膝状体"],
+    answer: "B",
+    analysis: "内侧丘系传导躯干、四肢深感觉（精细触觉、位置觉、运动觉、震动觉）。脊髓丘脑束传导躯干、四肢浅感觉（痛温觉、粗触觉）。三叉丘脑束传导头面部浅感觉。",
+    stars: 3
+  },
+  {
+    id: 9,
+    subject: "anatomy",
+    type: "choice",
+    question: "大脑皮层的听觉中枢位于",
+    options: ["颞横回", "距状裂周围", "颞上回后部", "角回", "顶上小叶"],
+    answer: "A",
+    analysis: "听觉中枢位于颞横回（Heschl回），接受来自内侧膝状体的听觉纤维。距状裂周围是视觉中枢。",
+    stars: 2
+  },
+  {
+    id: 10,
+    subject: "anatomy",
+    type: "choice",
+    question: "传导头面部浅感觉的纤维束是",
+    options: ["内侧丘系", "脊髓丘脑束", "三叉丘脑束", "视束", "皮质脊髓束"],
+    answer: "C",
+    analysis: "三叉丘脑束传导头面部浅感觉（痛温觉、粗触觉），起于三叉神经脊束核和脑桥核，经背侧丘脑腹后内侧核换元，投射到中央后回下部。",
+    stars: 2
+  },
+  {
+    id: 11,
+    subject: "anatomy",
+    type: "choice",
+    question: "心的正常起搏点是",
+    options: ["窦房结", "房室结", "房室束", "左束支", "右束支"],
+    answer: "A",
+    analysis: "窦房结是心的正常起搏点，自律性最高（60-100次/分），产生窦性心律。房室结是次级起搏点（40-60次/分），房室束以下传导速度最快。",
+    stars: 3
+  },
+  {
+    id: 12,
+    subject: "anatomy",
+    type: "choice",
+    question: "房室结的主要作用是",
+    options: ["产生兴奋", "传导兴奋", "延搁作用，防止过快下传", "心室收缩的起始点", "调节心率"],
+    answer: "C",
+    analysis: "房室结具有延搁作用（约0.1s），使心房收缩完成后心室才开始收缩，防止房室收缩重叠，并防止过快地传导至心室。",
+    stars: 3
+  },
+  {
+    id: 13,
+    subject: "anatomy",
+    type: "choice",
+    question: "心的位置约几分之几在身体正中线左侧",
+    options: ["1/2", "1/3", "2/3", "3/4", "1/4"],
+    answer: "C",
+    analysis: "心位于纵隔内，约2/3在正中线左侧，1/3在右侧。心的长轴倾斜，约与正中线呈45度角。",
+    stars: 2
+  },
+  {
+    id: 14,
+    subject: "anatomy",
+    type: "choice",
+    question: "心尖的朝向是",
+    options: ["右前上", "左前上", "左前下", "右前下", "正前方"],
+    answer: "C",
+    analysis: "心呈倒置的圆锥形，心尖朝向左前下方，由左心室构成，指向左前下方。心底朝向右后上方。",
+    stars: 2
+  },
+  {
+    id: 15,
+    subject: "anatomy",
+    type: "choice",
+    question: "左半心与右半心的比较中，右半心的瓣膜是",
+    options: ["二尖瓣", "三尖瓣", "主动脉瓣", "肺动脉瓣", "半月瓣"],
+    answer: "B",
+    analysis: "右半心（静脉心）入口为三尖瓣（右房室口），出口为肺动脉瓣；左半心（动脉心）入口为二尖瓣（左房室口），出口为主动脉瓣。",
+    stars: 2
+  },
+  {
+    id: 16,
+    subject: "anatomy",
+    type: "choice",
+    question: "心的传导系统中，自律性最高的结构是",
+    options: ["房室结", "窦房结", "房室束", "普肯耶纤维", "心室肌"],
+    answer: "B",
+    analysis: "窦房结自律性最高（60-100次/分），是心的正常起搏点。房室结次之（40-60次/分），普肯耶纤维自律性最低（20-40次/分）。",
+    stars: 3
+  },
+  {
+    id: 17,
+    subject: "anatomy",
+    type: "choice",
+    question: "肝的膈面借什么结构分为左、右两叶",
+    options: ["肝门", "镰状韧带", "肝圆韧带", "静脉韧带", "H沟"],
+    answer: "B",
+    analysis: "肝的膈面借镰状韧带分为左叶和右叶。脏面借H沟分为4叶（左叶、右叶、方叶、尾状叶）。肝门是肝左、右管，肝固有动脉左、右支等进出的部位。",
+    stars: 3
+  },
+  {
+    id: 18,
+    subject: "anatomy",
+    type: "choice",
+    question: "肝的脏面借H沟分为几叶",
+    options: ["2叶", "3叶", "4叶", "5叶", "6叶"],
+    answer: "C",
+    analysis: "肝的脏面借H沟分为4叶：左叶、右叶、方叶和尾状叶。横沟为肝门，有肝左右管、肝固有动脉、门静脉等出入。",
+    stars: 3
+  },
+  {
+    id: 19,
+    subject: "anatomy",
+    type: "choice",
+    question: "结肠与小肠形态区别的特征性结构是",
+    options: ["环形皱襞", "结肠带、结肠袋、肠脂垂", "绒毛", "腺体", "淋巴组织"],
+    answer: "B",
+    analysis: "结肠带、结肠袋和肠脂垂是结肠的特征性结构，小肠没有这些结构。环形皱襞和绒毛是小肠的特征。记忆：结肠三大特征——结肠带结肠袋肠脂垂。",
+    stars: 3
+  },
+  {
+    id: 20,
+    subject: "anatomy",
+    type: "choice",
+    question: "阑尾根部的体表定位标志是",
+    options: ["右髂前上棘与脐连线中点", "3条结肠带汇合处", "回肠前", "盲肠后", "腹膜后"],
+    answer: "B",
+    analysis: "阑尾根部借3条结肠带汇合处定位，与盲肠相连。McBurney点是阑尾炎的经典压痛点，位于右髂前上棘与脐连线中外1/3交界处。",
+    stars: 3
+  },
+  {
+    id: 21,
+    subject: "anatomy",
+    type: "choice",
+    question: "直肠齿状线的临床意义是",
+    options: ["皮肤与黏膜的分界线", "静脉与淋巴分界线", "动脉分界线", "神经分布界线", "腹膜转折处"],
+    answer: "A",
+    analysis: "齿状线是皮肤与黏膜的分界线，也是直肠上、下动脉及静脉、淋巴的分界线。齿状线以上为黏膜，齿状线以下为皮肤。",
+    stars: 2
+  },
+  {
+    id: 22,
+    subject: "anatomy",
+    type: "choice",
+    question: "门静脉由哪两条静脉汇合而成",
+    options: ["肠系膜上静脉和脾静脉", "肠系膜上静脉和肠系膜下静脉", "脾静脉和肠系膜下静脉", "肝静脉和脾静脉", "胃左静脉和脾静脉"],
+    answer: "A",
+    analysis: "门静脉由肠系膜上静脉和脾静脉汇合而成，在肝门处入肝。肠系膜下静脉通常汇入脾静脉。",
+    stars: 3
+  },
+  {
+    id: 23,
+    subject: "anatomy",
+    type: "choice",
+    question: "门静脉高压时，脐周静脉曲张呈现的特征性表现称为",
+    options: ["蛇头征", "海蛇头", "水母头", "蜘蛛痣", "蟹足征"],
+    answer: "B",
+    analysis: "门静脉高压时，脐周静脉网曲张形成'海蛇头'样外观，又称'水母头'。蜘蛛痣是肝功能减退导致雌激素灭活减少引起的血管扩张。",
+    stars: 3
+  },
+  {
+    id: 24,
+    subject: "anatomy",
+    type: "choice",
+    question: "食管静脉曲张破裂出血的门静脉侧支循环路径是",
+    options: ["胃左静脉→奇静脉→上腔静脉", "胃冠状静脉→食管静脉丛→奇静脉", "脾静脉→胃短静脉→食管静脉丛", "肠系膜上静脉→直肠静脉丛", "脐周静脉网→胸壁静脉"],
+    answer: "B",
+    analysis: "门静脉高压时，胃冠状静脉→食管静脉丛→奇静脉→上腔静脉，形成食管下端静脉曲张，破裂可致大出血，是最危险的并发症之一。",
+    stars: 3
+  },
+  {
+    id: 25,
+    subject: "anatomy",
+    type: "choice",
+    question: "左肺有几叶",
+    options: ["1叶", "2叶", "3叶", "4叶", "5叶"],
+    answer: "B",
+    analysis: "左肺分为上叶和下叶2叶，有斜裂。右肺分为上、中、下叶3叶，有斜裂和水平裂。左肺有心切迹。",
+    stars: 2
+  },
+  {
+    id: 26,
+    subject: "anatomy",
+    type: "choice",
+    question: "前庭蜗器的位置觉感受器包括",
+    options: ["螺旋器", "球囊斑和椭圆囊斑", "壶腹嵴和螺旋器", "椭圆囊斑和螺旋器", "球囊斑和壶腹嵴"],
+    answer: "B",
+    analysis: "前庭器官的位置觉感受器是球囊斑和椭圆囊斑（感受头部静止位置和线性加速度），壶腹嵴（位于三个半规管壶腹内）感受旋转变速运动。螺旋器是听觉感受器。",
+    stars: 2
+  },
+  {
+    id: 27,
+    subject: "anatomy",
+    type: "choice",
+    question: "听觉感受器是",
+    options: ["球囊斑", "椭圆囊斑", "壶腹嵴", "螺旋器（Corti器）", "前庭膜"],
+    answer: "D",
+    analysis: "螺旋器（Corti器）位于蜗管下壁，是听觉感受器，能将声波转换为神经冲动。基底膜上的毛细胞是感受装置。",
+    stars: 2
+  },
+  {
+    id: 28,
+    subject: "anatomy",
+    type: "choice",
+    question: "房水产生于",
+    options: ["虹膜", "睫状体", "晶状体", "玻璃体", "角膜"],
+    answer: "B",
+    analysis: "房水由睫状体分泌产生，经后房→瞳孔→前房→虹膜角膜角隙→巩膜静脉窦→眼静脉流出。房水功能：屈光、营养眼球、维持眼内压。",
+    stars: 2
+  },
+  {
+    id: 29,
+    subject: "anatomy",
+    type: "choice",
+    question: "房水循环的意义不包括",
+    options: ["屈光", "营养眼球", "维持眼内压", "遮光", "代谢产物排出"],
+    answer: "D",
+    analysis: "房水功能包括屈光（主要屈光间质）、营养眼球（角膜、晶状体、玻璃体无血管）、维持眼内压、代谢产物排出。不包括遮光。",
+    stars: 2
+  },
+  {
+    id: 30,
+    subject: "anatomy",
+    type: "choice",
+    question: "垂体分泌的激素不包括",
+    options: ["生长激素", "促甲状腺激素", "抗利尿激素", "促性腺激素", "催乳素"],
+    answer: "C",
+    analysis: "抗利尿激素（ADH）由下丘脑视上核分泌，储存于垂体后叶（神经垂体）。垂体前叶（腺垂体）分泌：GH、TSH、ACTH、LH、FSH、PRL、MSH。",
+    stars: 2
+  },
+  {
+    id: 31,
+    subject: "anatomy",
+    type: "choice",
+    question: "甲状腺分泌的激素是",
+    options: ["降钙素和甲状腺激素", "只有甲状腺激素", "甲状旁腺激素", "促甲状腺激素", "降钙素"],
+    answer: "A",
+    analysis: "甲状腺分泌甲状腺激素（T3、T4）和降钙素（CT）。甲状旁腺分泌甲状旁腺激素（PTH）。促甲状腺激素由垂体分泌。",
+    stars: 2
+  },
+  {
+    id: 32,
+    subject: "anatomy",
+    type: "choice",
+    question: "肾上腺皮质分泌的激素不包括",
+    options: ["糖皮质激素", "盐皮质激素", "性激素", "肾上腺素", "去甲肾上腺素"],
+    answer: "E",
+    analysis: "肾上腺素和去甲肾上腺素由肾上腺髓质分泌（髓质激素）。皮质分泌糖皮质激素（皮质醇）、盐皮质激素（醛固酮）和性激素。",
+    stars: 2
+  },
+  {
+    id: 33,
+    subject: "anatomy",
+    type: "choice",
+    question: "胰岛A细胞分泌",
+    options: ["胰岛素", "胰高血糖素", "生长抑素", "胰多肽", "淀粉酶"],
+    answer: "B",
+    analysis: "胰岛A细胞（α细胞）分泌胰高血糖素。胰岛B细胞（β细胞）分泌胰岛素。D细胞分泌生长抑素。PP细胞分泌胰多肽。",
+    stars: 2
+  },
+  {
+    id: 34,
+    subject: "anatomy",
+    type: "choice",
+    question: "松果体分泌的激素是",
+    options: ["褪黑素", "促黑激素", "前列腺素", "催产素", "抗利尿激素"],
+    answer: "A",
+    analysis: "松果体分泌褪黑素，参与调节昼夜节律和生殖功能。褪黑素抑制性腺发育，松果体 calcification 是常见的影像学表现。",
+    stars: 2
+  },
+  {
+    id: 35,
+    subject: "anatomy",
+    type: "choice",
+    question: "胸腺分泌的激素是",
+    options: ["胸腺素", "促红细胞生成素", "肾上腺皮质激素", "前列腺素", "降钙素"],
+    answer: "A",
+    analysis: "胸腺分泌胸腺素（包括胸腺素α1、胸腺素等），参与T淋巴细胞的发育和成熟。促红细胞生成素由肾脏分泌。",
+    stars: 2
+  },
+  {
+    id: 36,
+    subject: "anatomy",
+    type: "choice",
+    question: "患者出现'爪形手'畸形，提示哪条神经损伤",
+    options: ["正中神经", "尺神经", "桡神经", "肌皮神经", "腋神经"],
+    answer: "B",
+    analysis: "尺神经损伤导致爪形手畸形（小鱼际肌萎缩、骨间肌萎缩、第4-5指内收外展障碍）。正中神经损伤导致猿手（拇指对掌障碍）。桡神经损伤导致垂腕。",
+    stars: 2
+  },
+  {
+    id: 37,
+    subject: "anatomy",
+    type: "choice",
+    question: "患者出现'垂腕'畸形，提示哪条神经损伤",
+    options: ["正中神经", "尺神经", "桡神经", "肌皮神经", "腋神经"],
+    answer: "C",
+    analysis: "桡神经损伤导致垂腕畸形（前臂伸肌瘫痪），不能伸腕、伸指。临床常见于肱骨中段骨折。",
+    stars: 2
+  },
+  {
+    id: 38,
+    subject: "anatomy",
+    type: "choice",
+    question: "患者出现'猿手'畸形，提示哪条神经损伤",
+    options: ["正中神经", "尺神经", "桡神经", "肌皮神经", "腋神经"],
+    answer: "A",
+    analysis: "正中神经损伤导致猿手畸形（大鱼际肌萎缩），拇指不能对掌、外展，拇指示指捏物障碍。常见于腕管综合征。",
+    stars: 2
+  },
+  {
+    id: 39,
+    subject: "anatomy",
+    type: "choice",
+    question: "患者右眼内斜视，眼球不能外转，提示哪条神经损伤",
+    options: ["动眼神经", "滑车神经", "展神经", "面神经", "三叉神经"],
+    answer: "C",
+    analysis: "展神经支配外直肌，损伤后眼球内斜视，不能外转。动眼神经支配内直肌、上直肌、下直肌、下斜肌，损伤后眼球外斜视，上睑下垂。",
+    stars: 2
+  },
+  {
+    id: 40,
+    subject: "anatomy",
+    type: "choice",
+    question: "患者双眼瞳孔散大，对光反射消失，提示哪条神经损伤",
+    options: ["动眼神经", "滑车神经", "展神经", "视神经", "三叉神经"],
+    answer: "A",
+    analysis: "动眼神经支配瞳孔括约肌（缩瞳）和睫状肌。损伤后瞳孔散大，对光反射和调节反射消失。视神经损伤引起失明，但瞳孔对光反射存在（间接对光反射）。",
+    stars: 2
+  },
+  {
+    id: 41,
+    subject: "anatomy",
+    type: "choice",
+    question: "肝门静脉高压症患者出现呕血，其出血血管是",
+    options: ["胃左静脉", "食管静脉丛", "胃短静脉", "奇静脉", "直肠静脉丛"],
+    answer: "B",
+    analysis: "门静脉高压时，食管静脉丛曲张破裂可致呕血，是最危险的并发症之一，可导致失血性休克甚至死亡。",
+    stars: 3
+  },
+  {
+    id: 42,
+    subject: "anatomy",
+    type: "choice",
+    question: "某患者长期肝硬化，出现腹水，其腹水形成机制不包括",
+    options: ["门静脉压升高", "血浆胶体渗透压降低", "醛固酮灭活减少", "心输出量增加", "淋巴回流障碍"],
+    answer: "D",
+    analysis: "肝硬化腹水形成机制：①门脉压↑→毛细血管静水压↑；②白蛋白↓→血浆胶体渗透压↓；③醛固酮↑→水钠潴留；④淋巴回流障碍。心输出量增加不是腹水形成的原因。",
+    stars: 2
+  },
+  {
+    id: 43,
+    subject: "anatomy",
+    type: "choice",
+    question: "前庭器官受损时，患者最可能出现的症状是",
+    options: ["耳鸣", "听力下降", "眩晕和平衡失调", "眼球震颤", "耳聋"],
+    answer: "C",
+    analysis: "前庭器官负责平衡觉（位置觉和运动觉），受损后出现眩晕、平衡失调、恶心、呕吐、眼震等症状。螺旋器受损才影响听觉。",
+    stars: 2
+  },
+  {
+    id: 44,
+    subject: "anatomy",
+    type: "choice",
+    question: "螺旋器受损时，主要影响",
+    options: ["平衡觉", "听觉", "嗅觉", "视觉", "味觉"],
+    answer: "B",
+    analysis: "螺旋器（Corti器）是听觉感受器，位于蜗管基底膜上。受损后导致感音性耳聋（神经性耳聋），表现为听力下降甚至丧失。",
+    stars: 2
+  },
+  {
+    id: 45,
+    subject: "anatomy",
+    type: "choice",
+    question: "某患者左眼视野缺损，病变部位可能在",
+    options: ["左侧视神经", "视交叉中部", "左侧视束", "右侧视辐射", "右侧距状裂"],
+    answer: "D",
+    analysis: "视辐射传导左侧视野（右侧颞侧+左侧鼻侧）到右侧视皮层，损伤导致左眼颞侧和右眼鼻侧视野缺损（右侧偏盲）。",
+    stars: 2
+  },
+  {
+    id: 46,
+    subject: "anatomy",
+    type: "choice",
+    question: "大脑中动脉栓塞最可能出现的临床表现是",
+    options: ["双眼颞侧偏盲", "面部感觉障碍", "对侧偏瘫和偏身感觉障碍", "共济失调", "截瘫"],
+    answer: "C",
+    analysis: "大脑中动脉供血内囊（运动、感觉纤维），栓塞后出现对侧偏瘫、偏身感觉障碍、偏盲（三偏综合征）。视束损伤引起双眼同侧偏盲。",
+    stars: 2
+  },
+  {
+    id: 47,
+    subject: "anatomy",
+    type: "choice",
+    question: "内囊膝部通过的纤维束是",
+    options: ["皮质脊髓束", "皮质核束", "视辐射", "听辐射", "额桥束"],
+    answer: "B",
+    analysis: "内囊膝部通过皮质核束（管理对侧脑神经运动）。内囊后肢通过皮质脊髓束（管理对侧肢体随意运动）、视辐射、听辐射等。",
+    stars: 2
+  },
+  {
+    id: 48,
+    subject: "anatomy",
+    type: "choice",
+    question: "脑脊液产生于",
+    options: ["软脑膜", "蛛网膜", "脉络丛", "硬脑膜", "室管膜"],
+    answer: "C",
+    analysis: "脑脊液主要由脉络丛产生（侧脑室、第三脑室、第四脑室脉络丛），分布于各脑室和蛛网膜下隙。成人脑脊液总量约150ml。",
+    stars: 2
+  },
+  {
+    id: 49,
+    subject: "anatomy",
+    type: "choice",
+    question: "硬膜外隙位于",
+    options: ["硬脊膜与椎管骨膜之间", "软脊膜与蛛网膜之间", "蛛网膜与硬膜之间", "硬膜与软膜之间", "椎管内无此间隙"],
+    answer: "A",
+    analysis: "硬膜外隙位于硬脊膜与椎管骨膜之间，含脂肪组织、椎内静脉丛、淋巴管。硬膜外麻醉即在此间隙进行，穿刺时不穿破蛛网膜。",
+    stars: 2
+  },
+  {
+    id: 50,
+    subject: "anatomy",
+    type: "choice",
+    question: "胸导管注入",
+    options: ["左静脉角", "右静脉角", "上腔静脉", "下腔静脉", "锁骨下静脉"],
+    answer: "A",
+    analysis: "胸导管注入左静脉角（左颈干、左锁骨下干、左支气管纵隔干汇合处），收集全身3/4的淋巴。右淋巴导管注入右静脉角，收集右上半身淋巴。",
+    stars: 2
+  },
+  
+  // 判断题 51-59
+  {
+    id: 51,
+    subject: "anatomy",
+    type: "judge",
+    question: "臂丛的五大分支按桡侧顺序排列为：正中神经、尺神经、桡神经、肌皮神经、腋神经。",
+    answer: false,
+    analysis: "应为'外正内尺，后裹腋桡'，即外侧束→正中神经、肌皮神经；内侧束→尺神经；后束→腋神经、桡神经。记忆口诀：外正内尺，后裹腋桡。",
+    stars: 2
+  },
+  {
+    id: 52,
+    subject: "anatomy",
+    type: "judge",
+    question: "滑车神经是唯一从脑干背侧面入脑的脑神经。",
+    answer: true,
+    analysis: "滑车神经连于中脑背面，是唯一从背侧面入脑干的脑神经。其他脑神经均从腹侧面入脑。",
+    stars: 3
+  },
+  {
+    id: 53,
+    subject: "anatomy",
+    type: "judge",
+    question: "窦房结是心的正常起搏点，其自律性为60-100次/分。",
+    answer: true,
+    analysis: "窦房结自律性最高（60-100次/分），是心的正常起搏点，产生窦性心律。房室结是次级起搏点（40-60次/分）。",
+    stars: 3
+  },
+  {
+    id: 54,
+    subject: "anatomy",
+    type: "judge",
+    question: "肝的脏面借H沟分为左叶、右叶、方叶和尾状叶4叶。",
+    answer: true,
+    analysis: "肝的脏面借H沟分为4叶：左叶、右叶、方叶、尾状叶。膈面借镰状韧带分为左叶和右叶（2叶）。",
+    stars: 3
+  },
+  {
+    id: 55,
+    subject: "anatomy",
+    type: "judge",
+    question: "结肠的特征性结构是结肠带、结肠袋和肠脂垂，小肠也有这些结构。",
+    answer: false,
+    analysis: "结肠带、结肠袋、肠脂垂是结肠的特征性结构，小肠没有这些结构。小肠的特征是环形皱襞、绒毛、微绒毛。",
+    stars: 3
+  },
+  {
+    id: 56,
+    subject: "anatomy",
+    type: "judge",
+    question: "门静脉高压时，侧支循环可导致食管静脉曲张、脐周静脉曲张和痔静脉曲张。",
+    answer: true,
+    analysis: "门静脉高压时，主要通过三个吻合部位建立侧支循环：食管静脉丛（曲张→呕血）、脐周静脉网（海蛇头）、直肠静脉丛（曲张→便血）。",
+    stars: 3
+  },
+  {
+    id: 57,
+    subject: "anatomy",
+    type: "judge",
+    question: "左肺有2叶，右肺有3叶，左肺有斜裂和水平裂。",
+    answer: false,
+    analysis: "左肺有2叶（上叶、下叶），有斜裂；右肺有3叶（上、中、下叶），有斜裂和水平裂。左肺有心切迹。",
+    stars: 2
+  },
+  {
+    id: 58,
+    subject: "anatomy",
+    type: "judge",
+    question: "螺旋器是听觉感受器，位于蜗管下壁。",
+    answer: true,
+    analysis: "螺旋器（Corti器）是听觉感受器，位于蜗管基底膜上。蜗管位于前庭膜和基底膜之间，含内淋巴。",
+    stars: 2
+  },
+  {
+    id: 59,
+    subject: "anatomy",
+    type: "judge",
+    question: "房水由睫状体分泌，功能包括屈光、营养眼球和维持眼内压。",
+    answer: true,
+    analysis: "房水由睫状体分泌，经后房→瞳孔→前房→虹膜角膜角隙→巩膜静脉窦→眼静脉流出。功能：屈光、营养角膜和晶状体、维持眼内压。",
+    stars: 2
+  }
+];
+// ========================================
+// 生理学题目 - physiology.js
+// ========================================
+
+const PHYSIOLOGY_QUESTIONS = [
+  // 选择题 1-50
+  {
+    id: 60,
+    subject: "physiology",
+    type: "choice",
+    question: "神经调节的特点是",
+    options: ["缓慢、广泛", "快速、精准", "持续时间长", "作用范围广", "通过激素发挥作用"],
+    answer: "B",
+    analysis: "神经调节的特点是快速、精准、作用局限，通过反射弧完成。体液调节特点是缓慢、广泛、持久。",
+    stars: 3
+  },
+  {
+    id: 61,
+    subject: "physiology",
+    type: "choice",
+    question: "体液调节的特点是",
+    options: ["快速、精准", "缓慢、广泛、持久", "通过反射弧", "作用局限", "必须有中枢参与"],
+    answer: "B",
+    analysis: "体液调节通过激素等化学物质传递，缓慢、广泛、持久，主要作用于远处的靶器官。神经调节快速、精准、作用局限。",
+    stars: 3
+  },
+  {
+    id: 62,
+    subject: "physiology",
+    type: "choice",
+    question: "维持机体稳态的主要调节方式是",
+    options: ["正反馈", "负反馈", "前馈", "自身调节", "体液调节"],
+    answer: "B",
+    analysis: "负反馈是维持稳态的主要调节方式，如体温、血压、血糖的调节。正反馈加速某些生理过程，如血液凝固、排尿反射。",
+    stars: 3
+  },
+  {
+    id: 63,
+    subject: "physiology",
+    type: "choice",
+    question: "神经-骨骼肌接头处，Ach释放方式是",
+    options: ["单纯扩散", "易化扩散", "主动转运", "同步式释放", "量子式释放"],
+    answer: "D",
+    analysis: "神经-骨骼肌接头处，突触小泡与突触前膜融合，Ach同步式释放（100-200个囊泡同时释放）。",
+    stars: 3
+  },
+  {
+    id: 64,
+    subject: "physiology",
+    type: "choice",
+    question: "终板电位的特征是",
+    options: ["全或无", "等级性电位", "锋电位", "后电位", "超极化电位"],
+    answer: "B",
+    analysis: "终板电位是局部电位，呈等级性，可总和，无全或无特性。动作电位才是全或无的。",
+    stars: 3
+  },
+  {
+    id: 65,
+    subject: "physiology",
+    type: "choice",
+    question: "神经-骨骼肌接头传递的特点是",
+    options: ["双向传递", "1:1传递", "不易受药物影响", "有总和现象", "传递速度慢"],
+    answer: "B",
+    analysis: "神经-骨骼肌接头传递呈1:1关系，一个动作电位引发一个终板电位，单向传递，易受药物影响（如箭毒、阿托品）。",
+    stars: 3
+  },
+  {
+    id: 66,
+    subject: "physiology",
+    type: "choice",
+    question: "终板膜上的受体是",
+    options: ["M受体", "N₁受体", "N₂受体", "α受体", "β受体"],
+    answer: "C",
+    analysis: "终板膜上有N₂型乙酰胆碱受体（骨骼肌型），与Ach结合后产生终板电位。M受体主要分布在中枢神经系统和副交感神经节后纤维。",
+    stars: 3
+  },
+  {
+    id: 67,
+    subject: "physiology",
+    type: "choice",
+    question: "心室肌细胞动作电位的0期去极化是由于",
+    options: ["K⁺外流", "Na⁺内流", "Ca²⁺内流", "Cl⁻内流", "Mg²⁺内流"],
+    answer: "B",
+    analysis: "0期去极化由快Na⁺通道开放，Na⁺快速内流所致（-90mV→+30mV）。",
+    stars: 3
+  },
+  {
+    id: 68,
+    subject: "physiology",
+    type: "choice",
+    question: "心室肌细胞动作电位的2期（平台期）是由于",
+    options: ["Na⁺内流和K⁺外流平衡", "Ca²⁺内流和K⁺外流平衡", "K⁺外流为主", "Ca²⁺内流为主", "Cl⁻内流"],
+    answer: "B",
+    analysis: "平台期Ca²⁺内流（L型钙通道）和K⁺外流处于平衡状态，形成平台，是心室肌动作电位的特征，也是长动作电位的原因。",
+    stars: 3
+  },
+  {
+    id: 69,
+    subject: "physiology",
+    type: "choice",
+    question: "心动周期中，左心室内压最高是在",
+    options: ["心房收缩期", "等容收缩期", "快速射血期", "减慢射血期", "等容舒张期"],
+    answer: "C",
+    analysis: "快速射血期心室强烈收缩，室内压达峰值（可达150mmHg），血液快速射入主动脉。",
+    stars: 3
+  },
+  {
+    id: 70,
+    subject: "physiology",
+    type: "choice",
+    question: "心动周期中，左心室内压最低是在",
+    options: ["心房收缩期", "等容收缩期", "快速射血期", "快速充盈期", "减慢充盈期"],
+    answer: "D",
+    analysis: "快速充盈期心室舒张，室内压低于房内压，血液快速从心房进入心室，室内压降至最低。",
+    stars: 3
+  },
+  {
+    id: 71,
+    subject: "physiology",
+    type: "choice",
+    question: "动脉血压形成的前提条件是",
+    options: ["足够循环血量", "心脏射血", "外周阻力", "大动脉弹性", "血管通畅"],
+    answer: "A",
+    analysis: "足够循环血量是动脉血压形成的前提，心脏射血是动力，外周阻力是必要条件，大动脉弹性储器作用维持舒张压。",
+    stars: 2
+  },
+  {
+    id: 72,
+    subject: "physiology",
+    type: "choice",
+    question: "收缩压主要反映",
+    options: ["心率快慢", "外周阻力大小", "心肌收缩力", "循环血量", "大动脉弹性"],
+    answer: "C",
+    analysis: "收缩压主要由心肌收缩力和搏出量决定，反映心室射血能力。舒张压主要反映外周阻力大小。",
+    stars: 2
+  },
+  {
+    id: 73,
+    subject: "physiology",
+    type: "choice",
+    question: "舒张压主要反映",
+    options: ["心肌收缩力", "搏出量", "外周阻力", "循环血量", "动脉弹性"],
+    answer: "C",
+    analysis: "舒张压主要反映外周阻力大小，外周阻力增大时舒张压升高更明显。收缩压主要反映搏出量和心肌收缩力。",
+    stars: 2
+  },
+  {
+    id: 74,
+    subject: "physiology",
+    type: "choice",
+    question: "正常成人安静时，收缩压正常值为",
+    options: ["80-100mmHg", "90-120mmHg", "100-120mmHg", "120-140mmHg", "60-80mmHg"],
+    answer: "C",
+    analysis: "我国成人安静时收缩压正常值为100-120mmHg，舒张压60-80mmHg，脉压30-40mmHg。",
+    stars: 2
+  },
+  {
+    id: 75,
+    subject: "physiology",
+    type: "choice",
+    question: "肺通气的原动力是",
+    options: ["肺内压与大气压差", "呼吸肌运动", "胸膜腔负压", "肺弹性回缩力", "膈肌运动"],
+    answer: "B",
+    analysis: "呼吸肌收缩舒张是肺通气的原动力，由此产生肺内压与大气压差。肺内压与大气压差是直接动力。",
+    stars: 3
+  },
+  {
+    id: 76,
+    subject: "physiology",
+    type: "choice",
+    question: "肺通气的直接动力是",
+    options: ["呼吸运动", "肺内压与大气压差", "胸膜腔负压", "肺泡表面张力", "胸廓弹性回位力"],
+    answer: "B",
+    analysis: "肺内压与大气压差是肺通气的直接动力，是气体进出肺的直接原因。原动力是呼吸肌运动。",
+    stars: 3
+  },
+  {
+    id: 77,
+    subject: "physiology",
+    type: "choice",
+    question: "胸膜腔内压的特点是",
+    options: ["始终高于大气压", "始终低于大气压", "可正可负", "与大气压相等", "仅在吸气时低于大气压"],
+    answer: "B",
+    analysis: "胸膜腔内压始终低于大气压（负压），由肺弹性回缩力形成。生理意义：维持肺扩张状态，促进静脉血回流。",
+    stars: 3
+  },
+  {
+    id: 78,
+    subject: "physiology",
+    type: "choice",
+    question: "肺泡通气量是指",
+    options: ["每分钟进或出肺的气体总量", "每分钟进入肺泡的气体量", "潮气量与呼吸频率的乘积", "深吸气量与补呼气量之差", "肺泡通气量与无效腔之差"],
+    answer: "B",
+    analysis: "肺泡通气量=（潮气量-无效腔）×呼吸频率，是真正有效的通气量，参与气体交换。",
+    stars: 2
+  },
+  {
+    id: 79,
+    subject: "physiology",
+    type: "choice",
+    question: "O₂在血液中的主要运输形式是",
+    options: ["物理溶解", "与Hb结合", "与白蛋白结合", "与血浆蛋白结合", "碳酸氢盐"],
+    answer: "B",
+    analysis: "O₂物理溶解仅占1.5%，98.5%与Hb结合运输；CO₂以碳酸氢盐形式运输为主（95%）。",
+    stars: 2
+  },
+  {
+    id: 80,
+    subject: "physiology",
+    type: "choice",
+    question: "氧解离曲线右移表示",
+    options: ["Hb与O₂亲和力增加", "Hb与O₂亲和力降低", "Hb与O₂不易解离", "血液pH升高", "体温降低"],
+    answer: "B",
+    analysis: "氧解离曲线右移提示Hb与O₂亲和力降低，有利于O₂释放到组织。影响因素：PCO₂↑、温度↑、2,3-DPG↑、pH↓。",
+    stars: 2
+  },
+  {
+    id: 81,
+    subject: "physiology",
+    type: "choice",
+    question: "血液中CO₂的主要运输形式是",
+    options: ["物理溶解", "碳酸氢盐", "氨基甲酰血红蛋白", "与Hb结合", "碳酸"],
+    answer: "B",
+    analysis: "CO₂物理溶解占5%，碳酸氢盐形式占95%（主要形式），氨基甲酰血红蛋白占5%。",
+    stars: 2
+  },
+  {
+    id: 82,
+    subject: "physiology",
+    type: "choice",
+    question: "高浓度CO₂引起呼吸加深加快的机制主要是通过",
+    options: ["外周化学感受器", "中枢化学感受器", "肺牵张反射", "呼吸肌本体感受器", "压力感受器"],
+    answer: "B",
+    analysis: "CO₂主要通过中枢化学感受器（延髓）兴奋呼吸中枢，使呼吸加深加快。O₂主要通过外周化学感受器。",
+    stars: 3
+  },
+  {
+    id: 83,
+    subject: "physiology",
+    type: "choice",
+    question: "低O₂对呼吸的兴奋作用主要是通过",
+    options: ["中枢化学感受器", "外周化学感受器", "直接抑制呼吸中枢", "直接兴奋呼吸中枢", "压力感受器"],
+    answer: "B",
+    analysis: "低O₂通过外周化学感受器（颈动脉体、主动脉体）反射性兴奋呼吸中枢。注意：低O₂对中枢的直接作用是抑制。",
+    stars: 3
+  },
+  {
+    id: 84,
+    subject: "physiology",
+    type: "choice",
+    question: "消化道平滑肌的基本电节律（慢波）起源于",
+    options: ["纵行肌层", "环行肌层", "Cajal间质细胞", "肌间神经丛", "肌张感受器"],
+    answer: "C",
+    analysis: "慢波由Cajal间质细胞起搏，通过缝隙连接传递到纵行肌和环行肌，是消化道平滑肌的起步电位。",
+    stars: 2
+  },
+  {
+    id: 85,
+    subject: "physiology",
+    type: "choice",
+    question: "胃液中内因子的作用是",
+    options: ["激活胃蛋白酶原", "促进蛋白质消化", "促进维生素B₁₂吸收", "保护胃黏膜", "杀菌"],
+    answer: "C",
+    analysis: "内因子由壁细胞分泌，与维生素B₁₂结合促进其在回肠吸收，缺乏可致恶性贫血（巨幼细胞性贫血）。",
+    stars: 2
+  },
+  {
+    id: 86,
+    subject: "physiology",
+    type: "choice",
+    question: "促胰液素刺激胰液分泌",
+    options: ["水和碳酸氢盐", "胰酶", "胆汁", "胃酸", "黏液"],
+    answer: "A",
+    analysis: "促胰液素由小肠S细胞分泌，刺激胰液分泌水和碳酸氢盐（中和胃酸）。CCK刺激胰酶分泌和胆囊收缩。",
+    stars: 3
+  },
+  {
+    id: 87,
+    subject: "physiology",
+    type: "choice",
+    question: "缩胆囊素（CCK）刺激胰液分泌",
+    options: ["水和碳酸氢盐", "胰酶", "胰岛素", "胆汁", "碱性液"],
+    answer: "B",
+    analysis: "CCK由小肠I细胞分泌，刺激胰酶分泌和胆囊收缩。促胰液素刺激水和碳酸氢盐分泌。",
+    stars: 3
+  },
+  {
+    id: 88,
+    subject: "physiology",
+    type: "choice",
+    question: "脂溶性维生素的吸收需要",
+    options: ["内因子", "胆盐", "胰脂肪酶", "糖类", "蛋白质"],
+    answer: "B",
+    analysis: "脂溶性维生素（A、D、E、K）必须与胆盐结合形成微胶粒才能被吸收。内因子促进B₁₂吸收。",
+    stars: 2
+  },
+  {
+    id: 89,
+    subject: "physiology",
+    type: "choice",
+    question: "肾单位中，主要与尿液浓缩和稀释相关的是",
+    options: ["皮质肾单位", "近髓肾单位", "肾小球", "远曲小管", "集合管"],
+    answer: "B",
+    analysis: "近髓肾单位髓袢长，深入内髓，与尿液浓缩稀释密切相关。皮质肾单位主要与肾小球滤过有关。",
+    stars: 2
+  },
+  {
+    id: 90,
+    subject: "physiology",
+    type: "choice",
+    question: "渗透性利尿的机制是",
+    options: ["肾小球滤过率增加", "血浆渗透压升高", "集合管对水通透性增加", "近曲小管溶质主动重吸收增加", "远曲小管Na⁺重吸收减少"],
+    answer: "D",
+    analysis: "渗透性利尿时，近曲小管主动重吸收葡萄糖/Na⁺等溶质，使小管液渗透压升高，水重吸收减少，尿量增加。",
+    stars: 3
+  },
+  {
+    id: 91,
+    subject: "physiology",
+    type: "choice",
+    question: "糖尿病患者出现多尿的机制是",
+    options: ["肾小球滤过率增加", "渗透性利尿", "抗利尿激素分泌减少", "醛固酮分泌增加", "集合管对水通透性降低"],
+    answer: "B",
+    analysis: "糖尿病患者血糖过高，超过肾小管重吸收能力，葡萄糖在肾小管内产生渗透性利尿。",
+    stars: 3
+  },
+  {
+    id: 92,
+    subject: "physiology",
+    type: "choice",
+    question: "哪种物质的重吸收与Na⁺耦联",
+    options: ["葡萄糖", "尿素", "水", "K⁺", "Cl⁻"],
+    answer: "A",
+    analysis: "葡萄糖在近曲小管通过Na⁺-葡萄糖同向转运体（SGLT）主动重吸收，与Na⁺耦联。Na⁺重吸收为被动过程。",
+    stars: 2
+  },
+  {
+    id: 93,
+    subject: "physiology",
+    type: "choice",
+    question: "近视眼的成像位置和矫正方法是",
+    options: ["视网膜后方，凸透镜", "视网膜前方，凹透镜", "视网膜前方，凸透镜", "视网膜后方，凹透镜", "视网膜上，无需矫正"],
+    answer: "B",
+    analysis: "近视眼因眼轴过长或折光力过强，成像于视网膜前方，需用凹透镜矫正。远视眼成像于视网膜后方，用凸透镜矫正。",
+    stars: 2
+  },
+  {
+    id: 94,
+    subject: "physiology",
+    type: "choice",
+    question: "Broca区损伤可导致",
+    options: ["感觉性失语", "运动性失语", "失读症", "失写症", "失认症"],
+    answer: "B",
+    analysis: "Broca区（额下回后部，44、45区）损伤导致运动性失语，能理解但不能说。Wernicke区损伤导致感觉性失语，能说但不能理解。",
+    stars: 2
+  },
+  {
+    id: 95,
+    subject: "physiology",
+    type: "choice",
+    question: "脑电波中，β波主要出现在",
+    options: ["安静、闭眼时", "困倦、睡眠时", "白天工作、兴奋时", "深睡眠时", "麻醉时"],
+    answer: "C",
+    analysis: "β波（14-30Hz）出现在白天工作、兴奋、紧张时；α波见于安静闭眼（8-13Hz）；θ波见于困倦（4-7Hz）；δ波见于深睡眠（0.5-3Hz）。",
+    stars: 2
+  },
+  {
+    id: 96,
+    subject: "physiology",
+    type: "choice",
+    question: "腱反射的感受器是",
+    options: ["腱器官", "肌梭", "触觉感受器", "痛觉感受器", "温度感受器"],
+    answer: "B",
+    analysis: "腱反射（位相性牵张反射）的感受器是肌梭，梭内肌纤维感受牵拉刺激。腱器官感受肌肉张力的变化。",
+    stars: 3
+  },
+  {
+    id: 97,
+    subject: "physiology",
+    type: "choice",
+    question: "生长激素过多可导致成人出现",
+    options: ["侏儒症", "巨人症", "肢端肥大症", "呆小症", "甲状腺功能减退"],
+    answer: "C",
+    analysis: "生长激素过多，成人长骨已闭合，导致肢端肥大症；儿童长骨未闭合，导致巨人症。侏儒症是生长激素过少。",
+    stars: 2
+  },
+  {
+    id: 98,
+    subject: "physiology",
+    type: "choice",
+    question: "甲状腺激素对中枢神经系统的作用是",
+    options: ["抑制", "促进", "无影响", "先促进后抑制", "双向作用"],
+    answer: "B",
+    analysis: "甲状腺激素促进中枢神经系统发育和功能，提高中枢兴奋性。甲亢患者表现为易激动、失眠、焦虑等。",
+    stars: 2
+  },
+  {
+    id: 99,
+    subject: "physiology",
+    type: "choice",
+    question: "雌激素的生理作用不包括",
+    options: ["促进子宫内膜增生", "促进乳腺发育", "促进骨骺闭合", "促进子宫内膜分泌期转化", "促进水钠潴留"],
+    answer: "D",
+    analysis: "雌激素促进子宫内膜增生、乳腺发育、促进骨骺闭合、促进水钠潴留。分泌期转化由孕激素完成。",
+    stars: 2
+  },
+  {
+    id: 100,
+    subject: "physiology",
+    type: "choice",
+    question: "孕激素的生理作用不包括",
+    options: ["促进子宫内膜分泌期转化", "安胎", "升高体温", "促进乳腺发育", "促进子宫收缩"],
+    answer: "E",
+    analysis: "孕激素使子宫内膜转化为分泌期内膜，安胎，升高基础体温，促进乳腺腺泡发育；抑制子宫收缩。",
+    stars: 2
+  },
+  
+  // 判断题 101-109
+  {
+    id: 101,
+    subject: "physiology",
+    type: "judge",
+    question: "负反馈调节是维持稳态的重要机制，正反馈加速某些生理过程。",
+    answer: true,
+    analysis: "负反馈如体温、血压、血糖调节，维持稳态；正反馈如血液凝固、排尿反射、分娩，加速进程。",
+    stars: 3
+  },
+  {
+    id: 102,
+    subject: "physiology",
+    type: "judge",
+    question: "神经-骨骼肌接头传递具有1:1传递、单向性和易受药物影响的特点。",
+    answer: true,
+    analysis: "终板电位一个动作电位引发一个终板电位，1:1传递；单向传递；易受药物（箭毒、新斯的明）和代谢物影响。",
+    stars: 3
+  },
+  {
+    id: 103,
+    subject: "physiology",
+    type: "judge",
+    question: "心室肌细胞动作电位的平台期是由Ca²⁺内流和K⁺外流形成的。",
+    answer: true,
+    analysis: "平台期Ca²⁺内流（L型Ca²⁺通道）与K⁺外流处于平衡状态，形成平台，是心室肌动作电位的特征。",
+    stars: 3
+  },
+  {
+    id: 104,
+    subject: "physiology",
+    type: "judge",
+    question: "收缩压主要反映外周阻力，舒张压主要反映心肌收缩力。",
+    answer: false,
+    analysis: "收缩压主要反映搏出量和心肌收缩力，舒张压主要反映外周阻力大小。",
+    stars: 2
+  },
+  {
+    id: 105,
+    subject: "physiology",
+    type: "judge",
+    question: "肺泡通气量才是真正有效的通气量，取决于潮气量和呼吸频率。",
+    answer: true,
+    analysis: "肺泡通气量=（潮气量-无效腔）×呼吸频率，真正参与气体交换，是有效通气量。",
+    stars: 2
+  },
+  {
+    id: 106,
+    subject: "physiology",
+    type: "judge",
+    question: "CO₂主要通过外周化学感受器兴奋呼吸中枢。",
+    answer: false,
+    analysis: "CO₂主要通过中枢化学感受器（延髓）兴奋呼吸，外周化学感受器（颈动脉体、主动脉体）也参与但作用较小。",
+    stars: 3
+  },
+  {
+    id: 107,
+    subject: "physiology",
+    type: "judge",
+    question: "胰液是最全面的消化液，含有三大营养物质的消化酶。",
+    answer: true,
+    analysis: "胰液含胰淀粉酶、胰脂肪酶、胰蛋白酶、糜蛋白酶等，是最重要的消化液，能消化三大营养物质。",
+    stars: 2
+  },
+  {
+    id: 108,
+    subject: "physiology",
+    type: "judge",
+    question: "近视眼成像于视网膜后方，需用凸透镜矫正。",
+    answer: false,
+    analysis: "近视眼成像于视网膜前方（光线汇聚过早），需用凹透镜发散光线矫正。远视眼成像于视网膜后方，用凸透镜矫正。",
+    stars: 2
+  },
+  {
+    id: 109,
+    subject: "physiology",
+    type: "judge",
+    question: "视杆细胞含视紫红质，负责暗视觉；视锥细胞含视色素，负责明视觉和色觉。",
+    answer: true,
+    analysis: "视杆细胞在暗光下敏感（暗视觉）但无色觉；视锥细胞在亮光下工作并有辨色能力（明视觉、色觉）。",
+    stars: 2
+  }
+];
+// ========================================
+// 生物化学题目 - biochemistry.js
+// ========================================
+
+const BIOCHEMISTRY_QUESTIONS = [
+  // 选择题 110-159
+  {
+    id: 110,
+    subject: "biochemistry",
+    type: "choice",
+    question: "谷胱甘肽的生理功能主要依赖于",
+    options: ["γ-谷氨酰键", "肽键连接", "巯基（-SH）", "羧基", "氨基"],
+    answer: "C",
+    analysis: "谷胱甘肽（γ-谷氨酰-半胱氨酸-甘氨酸）的功能基团是巯基（-SH），具有抗氧化和解毒作用，保护红细胞膜。",
+    stars: 3
+  },
+  {
+    id: 111,
+    subject: "biochemistry",
+    type: "choice",
+    question: "镰刀型红细胞贫血的分子机制是",
+    options: ["DNA点突变导致氨基酸替换", "mRNA剪接异常", "蛋白质构象改变", "蛋白质合成减少", "蛋白质降解增加"],
+    answer: "A",
+    analysis: "镰刀型红细胞贫血因β链第6位谷氨酸被缬氨酸取代（GAG→GTG），是DNA点突变导致一级结构改变。",
+    stars: 3
+  },
+  {
+    id: 112,
+    subject: "biochemistry",
+    type: "choice",
+    question: "疯牛病（Prion病）的分子机制是",
+    options: ["一级结构改变", "空间构象改变", "氨基酸缺失", "氨基酸插入", "肽键断裂"],
+    answer: "B",
+    analysis: "PrPˢᶜ与PrPᶜ一级结构相同，但空间构象不同（α螺旋→β折叠），具有传染性，可自体折叠错误传播。",
+    stars: 3
+  },
+  {
+    id: 113,
+    subject: "biochemistry",
+    type: "choice",
+    question: "蛋白质的四级结构是指",
+    options: ["氨基酸排列顺序", "多肽链的折叠方式", "亚基间的空间排列", "亚基内相互作用", "辅基连接方式"],
+    answer: "C",
+    analysis: "四级结构指亚基间的空间排列和相互作用，亚基通过氢键、疏水键、盐键连接。不是所有蛋白质都有四级结构。",
+    stars: 2
+  },
+  {
+    id: 114,
+    subject: "biochemistry",
+    type: "choice",
+    question: "具有四级结构的蛋白质是",
+    options: ["肌红蛋白", "血红蛋白", "胰岛素", "细胞色素C", "核糖核酸酶"],
+    answer: "B",
+    analysis: "血红蛋白（Hb）由4个亚基（α₂β₂）组成，具有四级结构。肌红蛋白只有三级结构，胰岛素是单链但有三对二硫键。",
+    stars: 3
+  },
+  {
+    id: 115,
+    subject: "biochemistry",
+    type: "choice",
+    question: "竞争性抑制剂的特点是",
+    options: ["与底物结构相似，争夺活性中心，可逆", "与酶活性中心外结合", "与底物不竞争", "不可逆抑制", "与辅因子竞争"],
+    answer: "A",
+    analysis: "竞争性抑制剂与底物结构相似，争夺酶的活性中心，可通过增加底物浓度解除抑制（如磺胺药）。",
+    stars: 2
+  },
+  {
+    id: 116,
+    subject: "biochemistry",
+    type: "choice",
+    question: "心肌梗死诊断的首选酶标志物是",
+    options: ["ALT", "AST", "CK-MB", "淀粉酶", "脂肪酶"],
+    answer: "C",
+    analysis: "CK-MB是诊断心肌梗死的首选酶标志物，特异性高，峰值出现早（4-6h），对再梗死诊断有价值。",
+    stars: 3
+  },
+  {
+    id: 117,
+    subject: "biochemistry",
+    type: "choice",
+    question: "糖酵解的最终产物是",
+    options: ["丙酮酸", "乳酸", "CO₂+H₂O", "乙酰CoA", "草酰乙酸"],
+    answer: "B",
+    analysis: "氧充足时丙酮酸进入线粒体氧化，氧不足时还原为乳酸。乳酸是糖酵解在无氧条件下的终产物。",
+    stars: 2
+  },
+  {
+    id: 118,
+    subject: "biochemistry",
+    type: "choice",
+    question: "糖酵解产生的ATP数量是",
+    options: ["4ATP", "2ATP", "30-32ATP", "36ATP", "8ATP"],
+    answer: "B",
+    analysis: "糖酵解净产生2ATP（底物水平磷酸化），有氧氧化1分子葡萄糖产生30-32ATP（糖酵解2ATP+丙酮酸氧化2ATP+TCA循环24ATP）。",
+    stars: 2
+  },
+  {
+    id: 119,
+    subject: "biochemistry",
+    type: "choice",
+    question: "降低血糖的激素是",
+    options: ["胰高血糖素", "肾上腺素", "糖皮质激素", "胰岛素", "生长激素"],
+    answer: "D",
+    analysis: "胰岛素是唯一降低血糖的激素，促进葡萄糖摄取、利用和储存（促进糖原合成、糖酵解、脂肪合成）。",
+    stars: 3
+  },
+  {
+    id: 120,
+    subject: "biochemistry",
+    type: "choice",
+    question: "短期饥饿（1-3天）时，机体主要能量来源是",
+    options: ["葡萄糖", "脂肪酸", "氨基酸", "酮体", "乳酸"],
+    answer: "B",
+    analysis: "短期饥饿时，糖原耗尽后脂肪动员增加，脂肪酸成为主要能源，脑开始利用酮体（减少葡萄糖消耗）。",
+    stars: 3
+  },
+  {
+    id: 121,
+    subject: "biochemistry",
+    type: "choice",
+    question: "运输外源性甘油三酯的血浆脂蛋白是",
+    options: ["VLDL", "LDL", "HDL", "CM", "球蛋白"],
+    answer: "D",
+    analysis: "乳糜微粒（CM）运输外源性甘油三酯和胆固醇（从小肠到肝外组织），密度最低（<0.95）。",
+    stars: 3
+  },
+  {
+    id: 122,
+    subject: "biochemistry",
+    type: "choice",
+    question: "逆向转运胆固醇至肝脏的血浆脂蛋白是",
+    options: ["CM", "VLDL", "LDL", "HDL", "球蛋白"],
+    answer: "D",
+    analysis: "HDL介导胆固醇逆向转运（RCT），将外周组织胆固醇转运至肝脏代谢，具有抗动脉粥样硬化作用。",
+    stars: 3
+  },
+  {
+    id: 123,
+    subject: "biochemistry",
+    type: "choice",
+    question: "与动脉粥样硬化关系最密切的血浆脂蛋白是",
+    options: ["HDL", "LDL", "VLDL", "CM", "球蛋白"],
+    answer: "B",
+    analysis: "LDL将胆固醇转运至外周组织，LDL升高导致动脉粥样硬化，是冠心病独立危险因素。HDL具有保护作用。",
+    stars: 3
+  },
+  {
+    id: 124,
+    subject: "biochemistry",
+    type: "choice",
+    question: "肝性脑病发生的机制主要是",
+    options: ["血氨升高", "血糖降低", "血钠降低", "血渗透压改变", "血酮体升高"],
+    answer: "A",
+    analysis: "肝功能障碍→鸟氨酸循环障碍→氨代谢障碍→血氨↑→干扰脑能量代谢和神经递质→肝性脑病。",
+    stars: 3
+  },
+  {
+    id: 125,
+    subject: "biochemistry",
+    type: "choice",
+    question: "DNA复制特点是",
+    options: ["全保留复制", "半保留复制", "混合复制", "不复制", "随机复制"],
+    answer: "B",
+    analysis: "DNA复制为半保留复制，每条链作为新链合成的模板。Meselson-Stahl实验证明了半保留复制。",
+    stars: 3
+  },
+  {
+    id: 126,
+    subject: "biochemistry",
+    type: "choice",
+    question: "冈崎片段产生的原因是",
+    options: ["DNA双链反向平行+聚合酶5'→3'合成", "DNA聚合酶活性低", "引物酶活性低", "连接酶不足", "解旋酶活性低"],
+    answer: "A",
+    analysis: "DNA双链反向平行，复制叉前进方向与随从链合成方向相反，只能不连续合成，形成冈崎片段（100-200核苷酸）。",
+    stars: 3
+  },
+  {
+    id: 127,
+    subject: "biochemistry",
+    type: "choice",
+    question: "冈崎片段位于",
+    options: ["领头链", "随从链", "两条链", "非模板链", "RNA链"],
+    answer: "B",
+    analysis: "冈崎片段存在于随从链上，领头链连续合成。随从链因合成方向与复制叉方向相反而形成不连续的冈崎片段。",
+    stars: 3
+  },
+  {
+    id: 128,
+    subject: "biochemistry",
+    type: "choice",
+    question: "cDNA是指",
+    options: ["与mRNA互补的DNA", "染色质DNA", "线粒体DNA", "环状DNA", "病毒DNA"],
+    answer: "A",
+    analysis: "cDNA是由mRNA经逆转录酶合成的互补DNA，不含内含子，用于构建cDNA文库和基因工程。",
+    stars: 3
+  },
+  {
+    id: 129,
+    subject: "biochemistry",
+    type: "choice",
+    question: "mRNA由哪种RNA聚合酶转录",
+    options: ["RNA聚合酶I", "RNA聚合酶II", "RNA聚合酶III", "RNA聚合酶IV", "DNA聚合酶"],
+    answer: "B",
+    analysis: "RNA聚合酶II转录mRNA前体（hnRNA），RNA聚合酶I转录28S/18S/5.8S rRNA，RNA聚合酶III转录tRNA和5S rRNA。",
+    stars: 2
+  },
+  {
+    id: 130,
+    subject: "biochemistry",
+    type: "choice",
+    question: "乳糖操纵子的阻遏蛋白由哪个基因编码",
+    options: ["lac Z", "lac Y", "lac A", "lac I", "lac P"],
+    answer: "D",
+    analysis: "lac I基因编码阻遏蛋白，在P区启动，O区是操纵序列。Z、Y、A基因是结构基因（β-半乳糖苷酶、通透酶、乙酰转移酶）。",
+    stars: 3
+  },
+  {
+    id: 131,
+    subject: "biochemistry",
+    type: "choice",
+    question: "肝细胞性黄疸的特点是",
+    options: ["非结合胆红素↑↑", "结合胆红素↑↑", "结合+非结合胆红素↑", "尿胆红素阴性", "尿胆原↑↑"],
+    answer: "C",
+    analysis: "肝细胞性黄疸时肝细胞摄取、转化能力下降，结合+非结合胆红素均升高，尿胆红素阳性，尿胆原可正常或降低。",
+    stars: 3
+  },
+  {
+    id: 132,
+    subject: "biochemistry",
+    type: "choice",
+    question: "溶血性黄疸的特点是",
+    options: ["非结合胆红素↑↑，尿胆红素阴性", "结合胆红素↑↑", "尿胆红素阳性", "尿胆原正常", "血清胆固醇明显升高"],
+    answer: "A",
+    analysis: "溶血性黄疸时红细胞破坏增多，非结合胆红素↑↑，肝细胞处理能力正常，尿胆红素阴性，尿胆原↑↑，粪便颜色加深。",
+    stars: 3
+  },
+  {
+    id: 133,
+    subject: "biochemistry",
+    type: "choice",
+    question: "生物转化的第一相反应主要是",
+    options: ["结合反应", "氧化、还原、水解", "甲基化", "乙酰化", "磷酸化"],
+    answer: "B",
+    analysis: "生物转化第一相反应（药物代谢）包括氧化、还原、水解，其中最重要的是细胞色素P450催化的单加氧反应。",
+    stars: 3
+  },
+  {
+    id: 134,
+    subject: "biochemistry",
+    type: "choice",
+    question: "生物转化的第二相反应主要是",
+    options: ["氧化反应", "还原反应", "水解反应", "结合反应", "分解反应"],
+    answer: "D",
+    analysis: "生物转化第二相反应是结合反应，最常见的是葡萄糖醛酸结合（供体UDP-葡萄糖醛酸），使药物极性增加便于排泄。",
+    stars: 3
+  },
+  {
+    id: 135,
+    subject: "biochemistry",
+    type: "choice",
+    question: "初级胆汁酸是",
+    options: ["胆酸、鹅脱氧胆酸", "脱氧胆酸、石胆酸", "牛磺胆酸", "甘氨胆酸", "结合型胆汁酸"],
+    answer: "A",
+    analysis: "初级胆汁酸在肝细胞由胆固醇合成，包括胆酸和鹅脱氧胆酸；次级胆汁酸是肠道细菌作用后的产物（脱氧胆酸、石胆酸）。",
+    stars: 3
+  },
+  {
+    id: 136,
+    subject: "biochemistry",
+    type: "choice",
+    question: "脑的主要能源是",
+    options: ["脂肪酸", "葡萄糖和酮体", "乳酸", "氨基酸", "蛋白质"],
+    answer: "B",
+    analysis: "脑主要以葡萄糖为能源（有氧氧化为主），耗氧量大；饥饿时也可利用酮体（减少蛋白消耗）。",
+    stars: 2
+  },
+  {
+    id: 137,
+    subject: "biochemistry",
+    type: "choice",
+    question: "心肌的主要能源是",
+    options: ["葡萄糖", "脂肪酸（60-70%）", "乳酸", "酮体", "氨基酸"],
+    answer: "B",
+    analysis: "心肌以有氧氧化为主，脂肪酸是其主要能源（约60-70%），其次是葡萄糖（约30%）。心肌不能利用酮体。",
+    stars: 2
+  },
+  {
+    id: 138,
+    subject: "biochemistry",
+    type: "choice",
+    question: "青霉素的作用靶点是",
+    options: ["蛋白质合成", "细胞壁合成", "核酸合成", "叶酸合成", "细胞膜"],
+    answer: "B",
+    analysis: "青霉素抑制细菌细胞壁合成（转肽酶→肽聚糖交联障碍），对繁殖期细菌作用强，对人体细胞无影响（安全）。",
+    stars: 2
+  },
+  {
+    id: 139,
+    subject: "biochemistry",
+    type: "choice",
+    question: "氨基糖苷类抗生素的作用靶点是",
+    options: ["细胞壁合成", "蛋白质合成（30S亚基）", "蛋白质合成（50S亚基）", "核酸合成", "叶酸合成"],
+    answer: "B",
+    analysis: "氨基糖苷类作用于细菌30S亚基，阻断蛋白质合成起始，是杀菌剂。主要不良反应：耳毒性、肾毒性。",
+    stars: 2
+  },
+  {
+    id: 140,
+    subject: "biochemistry",
+    type: "choice",
+    question: "抑制DNA回旋酶的抗生素是",
+    options: ["青霉素", "喹诺酮类", "磺胺类", "四环素", "红霉素"],
+    answer: "B",
+    analysis: "喹诺酮类抑制DNA回旋酶和拓扑异构酶IV，阻断DNA复制，广谱，对G⁻菌作用强。不良反应：软骨损害（儿童慎用）。",
+    stars: 2
+  },
+  
+  // 判断题 141-148
+  {
+    id: 141,
+    subject: "biochemistry",
+    type: "judge",
+    question: "蛋白质的四级结构由多条肽链组成，每条肽链称为亚基，亚基间通过氢键、疏水键、盐键连接。",
+    answer: true,
+    analysis: "四级结构指亚基的空间排列和相互作用，有四级结构的蛋白质如血红蛋白（α₂β₂）。亚基间通过氢键、疏水键、盐键连接。",
+    stars: 2
+  },
+  {
+    id: 142,
+    subject: "biochemistry",
+    type: "judge",
+    question: "竞争性抑制剂不影响酶对底物的亲和力，但降低反应速度。",
+    answer: false,
+    analysis: "竞争性抑制剂与底物竞争活性中心，增加底物浓度可部分恢复活性，降低酶对底物的亲和力（Km↑）。",
+    stars: 2
+  },
+  {
+    id: 143,
+    subject: "biochemistry",
+    type: "judge",
+    question: "糖酵解在有氧和无氧条件下均可进行，产物均为乳酸。",
+    answer: false,
+    analysis: "糖酵解在无氧条件下产物为乳酸，有氧条件下丙酮酸进入线粒体氧化（有氧氧化），不产生乳酸。",
+    stars: 2
+  },
+  {
+    id: 144,
+    subject: "biochemistry",
+    type: "judge",
+    question: "短期饥饿时，脂肪动员增加，酮体生成增多，脑开始利用酮体。",
+    answer: true,
+    analysis: "饥饿1-3天糖原耗尽后，脂肪动员↑，酮体↑，脑开始利用酮体供能，减少蛋白分解（糖异生）。",
+    stars: 3
+  },
+  {
+    id: 145,
+    subject: "biochemistry",
+    type: "judge",
+    question: "DNA复制是半保留复制、半不连续复制、双向复制。",
+    answer: true,
+    analysis: "DNA复制特点：半保留复制（Meselson-Stahl实验证明）、半不连续复制（冈崎片段）、双向复制（两个复制叉）。",
+    stars: 3
+  },
+  {
+    id: 146,
+    subject: "biochemistry",
+    type: "judge",
+    question: "冈崎片段位于领头链上，因为领头链是连续合成的。",
+    answer: false,
+    analysis: "冈崎片段位于随从链上。领头链连续合成（与复制叉同向），随从链不连续合成（与复制叉反向）。",
+    stars: 3
+  },
+  {
+    id: 147,
+    subject: "biochemistry",
+    type: "judge",
+    question: "乳糖操纵子中，乳糖是诱导物，与阻遏蛋白结合使其失活，从而启动基因转录。",
+    answer: true,
+    analysis: "无乳糖时阻遏蛋白结合O区阻止转录；有乳糖时，乳糖（诱导剂）与阻遏蛋白结合，使其失活，解除阻遏。",
+    stars: 3
+  },
+  {
+    id: 148,
+    subject: "biochemistry",
+    type: "judge",
+    question: "肝硬化患者出现蜘蛛痣和肝掌，是因为雌激素灭活减少。",
+    answer: true,
+    analysis: "肝功能减退导致雌激素灭活减少，雌激素↑→小动脉扩张→蜘蛛痣、肝掌。好发于颈、前胸、手背。",
+    stars: 3
+  }
+];
+// ========================================
+// 病理学题目 - pathology.js
+// ========================================
+
+const PATHOLOGY_QUESTIONS = [
+  // 选择题 150-199
+  {
+    id: 150,
+    subject: "pathology",
+    type: "choice",
+    question: "下列不属于适应的是",
+    options: ["萎缩", "肥大", "增生", "化生", "变性"],
+    answer: "E",
+    analysis: "适应包括萎缩、肥大、增生、化生。变性属于可逆性损伤（变性严重时发展为坏死）。",
+    stars: 2
+  },
+  {
+    id: 151,
+    subject: "pathology",
+    type: "choice",
+    question: "凋亡与坏死的主要区别是",
+    options: ["凋亡是主动的，坏死是被动的", "凋亡是单细胞死亡，坏死是多细胞死亡", "凋亡无炎症，坏死有炎症", "凋亡有凋亡小体形成", "以上都是"],
+    answer: "E",
+    analysis: "凋亡是基因调控的程序性死亡（主动），单细胞死亡，无炎症，形成凋亡小体；坏死是意外性死亡（被动），多细胞死亡，有炎症反应。",
+    stars: 3
+  },
+  {
+    id: 152,
+    subject: "pathology",
+    type: "choice",
+    question: "凝固性坏死的好发部位是",
+    options: ["脑", "胰腺", "心、脾、肾", "肺", "肝"],
+    answer: "C",
+    analysis: "凝固性坏死使蛋白质变性凝固，轮廓保留，好发于心、脾、肾等实质器官（蛋白含量高）。液化性坏死好发于脑、胰腺。",
+    stars: 3
+  },
+  {
+    id: 153,
+    subject: "pathology",
+    type: "choice",
+    question: "干酪样坏死是",
+    options: ["彻底凝固性坏死+脂质", "组织溶解", "脂肪坏死", "坏死后继发腐败菌感染", "产气菌感染"],
+    answer: "A",
+    analysis: "干酪样坏死是结核病特征性改变，是彻底凝固性坏死+脂质，呈奶酪样。镜下坏死彻底，残存组织轮廓。",
+    stars: 3
+  },
+  {
+    id: 154,
+    subject: "pathology",
+    type: "choice",
+    question: "坏疽的好发部位是",
+    options: ["实质器官", "体表四肢、内脏", "中枢神经系统", "肌肉组织", "骨骼"],
+    answer: "B",
+    analysis: "坏疽是坏死+腐败菌感染，好发于体表四肢（干性坏疽）和内脏/四肢（湿性坏疽）。干性坏疽动脉阻塞+静脉通畅，湿性坏疽动静脉均阻塞。",
+    stars: 3
+  },
+  {
+    id: 155,
+    subject: "pathology",
+    type: "choice",
+    question: "肉芽组织的组成不包括",
+    options: ["新生毛细血管", "成纤维细胞", "炎细胞浸润", "纤维细胞", "巨噬细胞"],
+    answer: "D",
+    analysis: "肉芽组织由新生毛细血管、成纤维细胞、炎细胞（巨噬细胞、中性粒细胞）组成，逐渐转化为瘢痕组织。纤维细胞是成纤维细胞转变而来。",
+    stars: 3
+  },
+  {
+    id: 156,
+    subject: "pathology",
+    type: "choice",
+    question: "槟榔肝的形态特点是",
+    options: ["肝小叶中央淤血、周边脂肪变", "肝小叶周边淤血、中央脂肪变", "弥漫性脂肪变", "弥漫性淤血", "纤维组织增生"],
+    answer: "A",
+    analysis: "慢性肝淤血时，中央静脉和肝窦扩张淤血，周边肝细胞脂肪变，形成红黄相间的槟榔肝。常见于右心衰竭。",
+    stars: 3
+  },
+  {
+    id: 157,
+    subject: "pathology",
+    type: "choice",
+    question: "血栓形成的最常见条件是",
+    options: ["血管内皮损伤", "血流缓慢", "涡流形成", "血液凝固性增加", "高血脂"],
+    answer: "A",
+    analysis: "血管内皮损伤是最常见和最重要的条件，暴露胶原纤维→激活血小板和凝血系统→血栓形成。",
+    stars: 3
+  },
+  {
+    id: 158,
+    subject: "pathology",
+    type: "choice",
+    question: "白色血栓的组成是",
+    options: ["血小板+纤维素", "纤维素+RBC", "WBC+纤维素", "血小板+WBC", "纤维素"],
+    answer: "A",
+    analysis: "白色血栓（血小板血栓）由血小板和纤维素组成，好发于心瓣膜、动脉。混合血栓由血小板+纤维素+RBC组成，见于静脉、心室。",
+    stars: 3
+  },
+  {
+    id: 159,
+    subject: "pathology",
+    type: "choice",
+    question: "肺动脉栓塞的栓子95%来源于",
+    options: ["门静脉", "下肢深静脉", "肺静脉", "右心", "上腔静脉"],
+    answer: "B",
+    analysis: "肺动脉栓塞95%来自下肢深静脉（股静脉、腘静脉），血栓脱落随血流进入肺动脉。常见于长期卧床、手术后患者。",
+    stars: 3
+  },
+  {
+    id: 160,
+    subject: "pathology",
+    type: "choice",
+    question: "贫血性梗死的好发部位是",
+    options: ["肺、肠", "心、脾、肾", "脑", "肝", "骨骼肌"],
+    answer: "B",
+    analysis: "贫血性梗死（白色梗死）好发于组织致密、侧支循环少的器官，如心、脾、肾。出血性梗死好发于肺、肠（组织疏松+双重血供）。",
+    stars: 3
+  },
+  {
+    id: 161,
+    subject: "pathology",
+    type: "choice",
+    question: "炎症的基本病理变化是",
+    options: ["变质、渗出、增生", "变性、坏死", "红、肿、热、痛", "充血、水肿", "纤维化"],
+    answer: "A",
+    analysis: "炎症基本病理变化包括变质（损伤）、渗出（防御）、增生（修复）。红肿热痛是炎症的局部表现。",
+    stars: 3
+  },
+  {
+    id: 162,
+    subject: "pathology",
+    type: "choice",
+    question: "急性炎症24小时内主要渗出的细胞是",
+    options: ["淋巴细胞", "单核细胞", "中性粒细胞", "嗜酸性粒细胞", "浆细胞"],
+    answer: "C",
+    analysis: "急性炎症24小时内以中性粒细胞渗出为主（吞噬细菌），24-48小时转为单核细胞（吞噬病原体、组织碎片）。",
+    stars: 3
+  },
+  {
+    id: 163,
+    subject: "pathology",
+    type: "choice",
+    question: "绒毛心见于",
+    options: ["细菌性痢疾", "白喉", "风湿性心外膜炎", "大叶性肺炎", "流脑"],
+    answer: "C",
+    analysis: "风湿性心外膜炎是纤维素性炎，心包膜表面渗出大量纤维素，形成绒毛状外观，称绒毛心。",
+    stars: 3
+  },
+  {
+    id: 164,
+    subject: "pathology",
+    type: "choice",
+    question: "蜂窝织性炎的主要病原菌是",
+    options: ["金黄色葡萄球菌", "溶血性链球菌", "肺炎链球菌", "大肠杆菌", "绿脓杆菌"],
+    answer: "B",
+    analysis: "蜂窝织炎是溶血性链球菌引起的弥漫性化脓性炎，好发于阑尾、皮肤。脓肿主要由金葡菌引起（局限性）。",
+    stars: 2
+  },
+  {
+    id: 165,
+    subject: "pathology",
+    type: "choice",
+    question: "肿瘤性增殖的特点是",
+    options: ["多克隆性", "单克隆性", "去除刺激因素后可恢复", "炎细胞浸润", "组织损伤"],
+    answer: "B",
+    analysis: "肿瘤性增殖是单克隆性（来自单个细胞的异常增殖），非肿瘤性增殖是多克隆性。肿瘤细胞具有自主性生长。",
+    stars: 2
+  },
+  {
+    id: 166,
+    subject: "pathology",
+    type: "choice",
+    question: "良性肿瘤与恶性肿瘤的主要区别是",
+    options: ["生长速度", "转移", "复发", "分化程度", "以上都是"],
+    answer: "E",
+    analysis: "良性肿瘤与恶性肿瘤的区别包括分化程度、异型性、核分裂、生长速度、转移、复发等，转移是恶性肿瘤的确诊依据。",
+    stars: 3
+  },
+  {
+    id: 167,
+    subject: "pathology",
+    type: "choice",
+    question: "癌与肉瘤的主要区别是",
+    options: ["组织来源不同", "发病率不同（癌:肉瘤=9:1）", "转移途径不同（癌:淋巴道，肉瘤:血道）", "好发年龄不同", "以上都是"],
+    answer: "E",
+    analysis: "癌来源于上皮组织，肉瘤来源于间叶组织，发病率、转移、好发年龄均有差异。",
+    stars: 3
+  },
+  {
+    id: 168,
+    subject: "pathology",
+    type: "choice",
+    question: "Krukenberg瘤是指",
+    options: ["肺癌转移至卵巢", "胃粘液腺癌种植转移至卵巢", "乳腺癌转移至卵巢", "卵巢原发性肿瘤", "子宫癌转移至卵巢"],
+    answer: "B",
+    analysis: "Krukenberg瘤是胃粘液腺癌种植转移至卵巢形成的转移性肿瘤，双侧多见，镜下可见印戒细胞。",
+    stars: 3
+  },
+  {
+    id: 169,
+    subject: "pathology",
+    type: "choice",
+    question: "消化道肿瘤最常见的转移器官是",
+    options: ["肺", "骨", "脑", "肝", "肾"],
+    answer: "D",
+    analysis: "消化道肿瘤（胃癌、结肠癌）经门静脉转移至肝，是最常见的远处转移部位。肺癌转移至骨，乳腺癌转移至肺和骨。",
+    stars: 3
+  },
+  {
+    id: 170,
+    subject: "pathology",
+    type: "choice",
+    question: "大叶性肺炎红色肝样变期，痰液特点是",
+    options: ["白色粘痰", "黄色脓痰", "铁锈色痰", "粉红色泡沫痰", "粘液脓性痰"],
+    answer: "C",
+    analysis: "大叶性肺炎红色肝样变期，肺泡腔含铁血黄素渗出，痰液呈铁锈色。粉红色泡沫痰见于急性肺水肿（左心衰）。",
+    stars: 3
+  },
+  {
+    id: 171,
+    subject: "pathology",
+    type: "choice",
+    question: "大叶性肺炎的分期不包括",
+    options: ["充血水肿期", "红色肝样变期", "灰色肝样变期", "溶解消散期", "纤维化期"],
+    answer: "E",
+    analysis: "大叶性肺炎分4期：充血水肿期→红色肝样变期→灰色肝样变期→溶解消散期，7天左右消散。纤维化不是大叶性肺炎的正常分期。",
+    stars: 3
+  },
+  {
+    id: 172,
+    subject: "pathology",
+    type: "choice",
+    question: "小叶性肺炎的特点是",
+    options: ["以细支气管为中心的化脓性炎", "多见于小儿、老年人", "散在分布", "可导致肺脓肿", "以上都是"],
+    answer: "E",
+    analysis: "小叶性肺炎以细支气管为中心，多见于婴幼儿和老年人，散在分布，可导致肺脓肿、脓胸等并发症。",
+    stars: 2
+  },
+  {
+    id: 173,
+    subject: "pathology",
+    type: "choice",
+    question: "病毒性肺炎的特点是",
+    options: ["间质性炎（不累及肺泡腔）", "病毒包涵体", "透明膜", "淋巴细胞浸润", "以上都是"],
+    answer: "E",
+    analysis: "病毒性肺炎是间质性炎，特征为病毒包涵体、透明膜形成，淋巴细胞套袖现象，不累及肺泡腔。",
+    stars: 2
+  },
+  {
+    id: 174,
+    subject: "pathology",
+    type: "choice",
+    question: "风湿病的特征性病变是",
+    options: ["纤维素样变性", "Aschoff小体", "肉芽肿", "纤维化", "钙化"],
+    answer: "B",
+    analysis: "Aschoff小体（风湿小体）是风湿病的特征性病变，见于增生期，中央为阿绍夫细胞（吞噬纤维素样坏死物）。",
+    stars: 3
+  },
+  {
+    id: 175,
+    subject: "pathology",
+    type: "choice",
+    question: "风湿性心内膜炎的赘生物成分是",
+    options: ["细菌团", "白色血栓（纤维素+血小板）", "纤维组织", "肉芽组织", "钙化斑"],
+    answer: "B",
+    analysis: "风湿性心内膜炎的赘生物是白色血栓，由纤维素和血小板组成，附着于瓣膜，不易脱落。",
+    stars: 3
+  },
+  {
+    id: 176,
+    subject: "pathology",
+    type: "choice",
+    question: "高血压病最严重的并发症是",
+    options: ["脑水肿", "脑软化", "脑出血", "肾衰竭", "心力衰竭"],
+    answer: "C",
+    analysis: "高血压脑出血是最严重的并发症，基底节区（豆纹动脉破裂）最常见，死亡率极高。高血压也可导致心衰、肾衰。",
+    stars: 3
+  },
+  {
+    id: 177,
+    subject: "pathology",
+    type: "choice",
+    question: "病毒性肝炎中，慢性活动型肝炎的特征性坏死是",
+    options: ["点状坏死", "碎片状坏死", "桥接坏死", "大片坏死", "嗜酸性坏死"],
+    answer: "B",
+    analysis: "碎片状坏死是慢性活动型肝炎的特征性表现，位于肝小叶周边，纤维间隔形成。桥接坏死也是慢性活动型肝炎的表现。",
+    stars: 3
+  },
+  {
+    id: 178,
+    subject: "pathology",
+    type: "choice",
+    question: "肝硬化假小叶的特点是",
+    options: ["肝细胞排列紊乱", "中央静脉偏位或缺如", "纤维间隔内有胆管和血管", "肝细胞再生", "以上都是"],
+    answer: "E",
+    analysis: "假小叶是肝硬化的特征性病变，肝小叶结构被破坏，假小叶内肝细胞排列紊乱、中央静脉偏位或缺如、纤维间隔内有胆管和血管。",
+    stars: 3
+  },
+  {
+    id: 179,
+    subject: "pathology",
+    type: "choice",
+    question: "原发性肝癌的辅助诊断指标是",
+    options: ["AFP", "CEA", "CA19-9", "PSA", "CA125"],
+    answer: "A",
+    analysis: "甲胎蛋白（AFP）是原发性肝细胞癌的特异性标志物，成人血清AFP升高（>400ng/ml）提示肝癌。",
+    stars: 3
+  },
+  {
+    id: 180,
+    subject: "pathology",
+    type: "choice",
+    question: "急进性肾小球肾炎的特征性病变是",
+    options: ["大红肾", "驼峰状沉积物", "新月体形成", "颗粒状荧光", "补体降低"],
+    answer: "C",
+    analysis: "急进性肾炎（快速进展性肾炎）特征为新月体形成（壁层上皮细胞增生），临床表现为急进性肾炎综合征。",
+    stars: 3
+  },
+  {
+    id: 181,
+    subject: "pathology",
+    type: "choice",
+    question: "流脑与乙脑的鉴别点是",
+    options: ["炎症类型", "好发季节", "脑脊液特点", "病理特点", "以上都是"],
+    answer: "E",
+    analysis: "流脑是化脓性炎，冬春季，脑脊液脓性；乙脑是变质性炎，夏秋季，脑脊液细胞增多（淋巴细胞为主），特征为淋巴细胞套袖现象、筛状软化灶。",
+    stars: 3
+  },
+  {
+    id: 182,
+    subject: "pathology",
+    type: "choice",
+    question: "结核结节的特征性细胞是",
+    options: ["巨噬细胞", "淋巴细胞", "朗格汉斯巨细胞", "成纤维细胞", "浆细胞"],
+    answer: "C",
+    analysis: "结核结节的特征性细胞是朗格汉斯巨细胞（多个核排列成马蹄形），中央为干酪样坏死，周围是上皮样细胞和淋巴细胞。",
+    stars: 3
+  },
+  {
+    id: 183,
+    subject: "pathology",
+    type: "choice",
+    question: "原发性肺结核的典型表现是",
+    options: ["浸润性肺结核", "空洞性肺结核", "原发综合征（哑铃状）", "粟粒性肺结核", "干酪性肺炎"],
+    answer: "C",
+    analysis: "原发综合征包括原发病灶+淋巴管炎+肺门淋巴结结核，X线呈哑铃状阴影（肺内原发病灶+肺门淋巴结肿大）。",
+    stars: 3
+  },
+  {
+    id: 184,
+    subject: "pathology",
+    type: "choice",
+    question: "肠结核的好发部位是",
+    options: ["十二指肠", "空肠", "回盲部", "升结肠", "直肠"],
+    answer: "C",
+    analysis: "肠结核好发于回盲部，可能与回盲部淋巴组织丰富、食物停留时间长有关。",
+    stars: 2
+  },
+  {
+    id: 185,
+    subject: "pathology",
+    type: "choice",
+    question: "溃疡性结肠炎的特点不包括",
+    options: ["连续性分布", "黏膜层病变", "隐窝脓肿", "透壁性炎", "PPAR-γ配体治疗"],
+    answer: "D",
+    analysis: "溃疡性结肠炎是黏膜层的连续性病变；克罗恩病是节段性、透壁性炎（累及肠壁全层）。",
+    stars: 2
+  },
+  
+  // 判断题 186-193
+  {
+    id: 186,
+    subject: "pathology",
+    type: "judge",
+    question: "凋亡是基因调控的程序性死亡，无炎症反应；坏死是被动的意外性死亡，有炎症反应。",
+    answer: true,
+    analysis: "凋亡与坏死是两种不同的细胞死亡形式，凋亡是主动、有序的，坏死是被动、无序的。凋亡不引起炎症。",
+    stars: 3
+  },
+  {
+    id: 187,
+    subject: "pathology",
+    type: "judge",
+    question: "肉芽组织具有抗感染保护创面、填补创口缺损、机化包裹异物的作用。",
+    answer: true,
+    analysis: "肉芽组织是组织修复的重要成分，抗感染保护创面、填补创口缺损、机化包裹异物，最终转化为瘢痕组织。",
+    stars: 3
+  },
+  {
+    id: 188,
+    subject: "pathology",
+    type: "judge",
+    question: "白色血栓由血小板和纤维素组成，好发于静脉；红色血栓由纤维素和红细胞组成，好发于动脉。",
+    answer: false,
+    analysis: "白色血栓好发于动脉、心瓣膜；红色血栓好发于静脉（尾部），是延续性血栓的尾部，含大量红细胞。",
+    stars: 3
+  },
+  {
+    id: 189,
+    subject: "pathology",
+    type: "judge",
+    question: "炎症的基本病理变化是变质、渗出、增生，分别代表损伤、防御、修复。",
+    answer: true,
+    analysis: "变质是炎性介质和病原导致的损伤；渗出是血管反应和炎细胞渗出，是防御的核心；增生是修复过程。",
+    stars: 3
+  },
+  {
+    id: 190,
+    subject: "pathology",
+    type: "judge",
+    question: "良性肿瘤与恶性肿瘤最主要的区别是有无转移，转移是恶性肿瘤的特征。",
+    answer: true,
+    analysis: "转移是恶性肿瘤的确诊依据，良性肿瘤无转移。分化程度、异型性、核分裂等也有助于鉴别。",
+    stars: 3
+  },
+  {
+    id: 191,
+    subject: "pathology",
+    type: "judge",
+    question: "病毒性肺炎是间质性炎，累及肺泡腔；大叶性肺炎是肺泡性炎，不累及肺泡壁。",
+    answer: false,
+    analysis: "病毒性肺炎是间质性炎（不累及肺泡腔）；大叶性肺炎是肺泡性炎，累及肺泡腔和肺泡壁（肺实变）。",
+    stars: 2
+  },
+  {
+    id: 192,
+    subject: "pathology",
+    type: "judge",
+    question: "风湿性心外膜炎形成的绒毛心，是纤维素性炎的特征性表现。",
+    answer: true,
+    analysis: "风湿性心外膜炎时，心包表面渗出大量纤维素，形成绒毛样外观，称绒毛心，是纤维素性炎的特征。",
+    stars: 3
+  },
+  {
+    id: 193,
+    subject: "pathology",
+    type: "judge",
+    question: "肝硬化腹水的形成机制包括门脉压升高、低蛋白血症、醛固酮增多和抗利尿激素增多。",
+    answer: true,
+    analysis: "肝硬化腹水是多因素造成的，包括门脉高压、低蛋白血症（胶体渗透压下降）、醛固酮增多（水钠潴留）、ADH增多等。",
+    stars: 3
+  }
+];
+// ========================================
+// 病理生理学题目 - pathophys.js
+// ========================================
+
+const PATHOPHYS_QUESTIONS = [
+  // 选择题 200-249
+  {
+    id: 200,
+    subject: "pathophys",
+    type: "choice",
+    question: "高渗性脱水的特点是",
+    options: ["水丢失大于钠丢失", "钠丢失大于水丢失", "水钠等比例丢失", "血容量明显减少", "早期出现休克"],
+    answer: "A",
+    analysis: "高渗性脱水水丢失>钠丢失，血清钠>150mmol/L，以细胞内脱水为主（水从细胞内移出），口渴明显。",
+    stars: 2
+  },
+  {
+    id: 201,
+    subject: "pathophys",
+    type: "choice",
+    question: "低渗性脱水的特点是",
+    options: ["水丢失大于钠丢失", "钠丢失大于水丢失", "血钠升高", "细胞内水肿", "口渴不明显"],
+    answer: "B",
+    analysis: "低渗性脱水钠丢失>水丢失，血清钠<130mmol/L，易出现休克，无口渴（细胞外液渗透压低）。",
+    stars: 2
+  },
+  {
+    id: 202,
+    subject: "pathophys",
+    type: "choice",
+    question: "低张性缺氧的特点是",
+    options: ["PaO₂↓，血氧饱和度↓", "PaO₂正常，血氧饱和度↓", "PaO₂↓，血氧饱和度正常", "血氧含量正常", "动-静脉氧含量差增大"],
+    answer: "A",
+    analysis: "低张性缺氧以PaO₂和血氧饱和度降低为特征，见于呼吸衰竭、先心病右向左分流。",
+    stars: 3
+  },
+  {
+    id: 203,
+    subject: "pathophys",
+    type: "choice",
+    question: "血液性缺氧的特点是",
+    options: ["PaO₂↓", "血氧容量↓", "血氧饱和度↓", "动-静脉氧含量差↑", "皮肤颜色鲜红"],
+    answer: "B",
+    analysis: "血液性缺氧PaO₂正常，血氧容量或含量下降，血氧饱和度可正常，见于贫血、CO中毒（碳氧血红蛋白）。",
+    stars: 3
+  },
+  {
+    id: 204,
+    subject: "pathophys",
+    type: "choice",
+    question: "循环性缺氧的特点是",
+    options: ["PaO₂↓", "血氧含量↓", "动-静脉氧含量差↑", "血氧饱和度↓", "皮肤颜色暗红"],
+    answer: "C",
+    analysis: "循环性缺氧血流缓慢，单位时间内组织供氧↓，动-静脉氧含量差增大。皮肤呈紫绀。",
+    stars: 3
+  },
+  {
+    id: 205,
+    subject: "pathophys",
+    type: "choice",
+    question: "肺通气障碍引起低氧血症的机制是",
+    options: ["肺泡通气量↓→PaO₂↓", "弥散障碍", "V/Q比例失调", "解剖分流↑", "以上都是"],
+    answer: "E",
+    analysis: "肺通气障碍导致肺泡通气量下降，加上V/Q比例失调和弥散障碍，引起PaO₂↓。",
+    stars: 3
+  },
+  {
+    id: 206,
+    subject: "pathophys",
+    type: "choice",
+    question: "发热时，外致热原激活吞噬细胞释放的介质是",
+    options: ["组胺", "5-HT", "IL-1、TNF、IL-6", "肾上腺素", "干扰素"],
+    answer: "C",
+    analysis: "IL-1、TNF、IL-6是内生致热原，作用于体温调定点（视前区-下丘脑前部）引起发热。",
+    stars: 2
+  },
+  {
+    id: 207,
+    subject: "pathophys",
+    type: "choice",
+    question: "解热镇痛药退热的机制是",
+    options: ["抑制中枢COX→PGE合成↓", "抑制外周COX", "直接抑制下丘脑", "抗感染", "促进散热"],
+    answer: "A",
+    analysis: "解热镇痛药抑制中枢COX→PGE合成↓，使体温调定点恢复到正常水平，仅在发热时降温，正常体温不受影响。",
+    stars: 3
+  },
+  {
+    id: 208,
+    subject: "pathophys",
+    type: "choice",
+    question: "休克进展期（失代偿期）的特点是",
+    options: ["血管收缩", "血压基本正常", "酸中毒、微血管扩张", "儿茶酚胺↑", "微血栓形成"],
+    answer: "C",
+    analysis: "休克进展期因组织缺氧→酸中毒→微血管扩张（失代偿），血压↓、皮肤发绀、尿少。",
+    stars: 3
+  },
+  {
+    id: 209,
+    subject: "pathophys",
+    type: "choice",
+    question: "DIC的高凝期特点是",
+    options: ["凝血酶↑，广泛微血栓", "PT↑、APTT↑", "PLT↓、Fg↓", "FDP↑", "D-二聚体↑"],
+    answer: "A",
+    analysis: "DIC高凝期凝血酶↑，形成广泛微血栓，实验室PT↓、APTT↓（消耗前）。",
+    stars: 3
+  },
+  {
+    id: 210,
+    subject: "pathophys",
+    type: "choice",
+    question: "DIC消耗性低凝期的实验室特点是",
+    options: ["凝血酶↑", "PT↓、APTT↓", "PLT↓、Fg↓、PT↑", "FDP正常", "D-二聚体正常"],
+    answer: "C",
+    analysis: "DIC消耗性低凝期凝血因子大量消耗，PLT↓、Fg↓、PT↑、APTT↑，出现出血倾向。",
+    stars: 3
+  },
+  {
+    id: 211,
+    subject: "pathophys",
+    type: "choice",
+    question: "心功能不全时，左心衰导致",
+    options: ["肺淤血", "肝淤血", "下肢水肿", "颈静脉怒张", "腹水"],
+    answer: "A",
+    analysis: "左心衰→左心排血↓→肺淤血→呼吸困难；右心衰→体循环淤血（肝、下肢水肿等）。",
+    stars: 3
+  },
+  {
+    id: 212,
+    subject: "pathophys",
+    type: "choice",
+    question: "心功能不全的代偿机制不包括",
+    options: ["心率加快", "心脏肥大", "神经体液激活（RAAS）", "心肌收缩力增强", "呼吸代偿"],
+    answer: "E",
+    analysis: "心功能不全代偿机制包括心率加快（交感神经）、心脏肥大（Frank-Starling）、神经体液激活（RAAS）。",
+    stars: 3
+  },
+  {
+    id: 213,
+    subject: "pathophys",
+    type: "choice",
+    question: "肝性脑病发生的机制不包括",
+    options: ["氨中毒学说", "假性神经递质学说", "氨基酸失衡学说", "脂多糖学说", "γ-氨基丁酸学说"],
+    answer: "D",
+    analysis: "肝性脑病主要机制包括氨中毒、假性神经递质、氨基酸失衡、GABA等。脂多糖与肝性脑病关系不直接。",
+    stars: 3
+  },
+  {
+    id: 214,
+    subject: "pathophys",
+    type: "choice",
+    question: "肝性脑病时，血氨升高的主要原因是",
+    options: ["肠道产氨↑", "氨的清除障碍", "氨的利用障碍", "肌肉产氨↑", "肾脏产氨↑"],
+    answer: "B",
+    analysis: "肝功能障碍→鸟氨酸循环障碍→氨的清除↓→血氨↑，是血氨升高的主要原因。",
+    stars: 3
+  },
+  {
+    id: 215,
+    subject: "pathophys",
+    type: "choice",
+    question: "肝性脑病常见的诱因不包括",
+    options: ["上消化道出血", "高蛋白饮食", "低血糖", "高血钾", "感染"],
+    answer: "D",
+    analysis: "肝性脑病诱因包括上消化道出血、高蛋白饮食、低血糖、感染、便秘、利尿剂等；低血钾不是常见诱因。",
+    stars: 3
+  },
+  {
+    id: 216,
+    subject: "pathophys",
+    type: "choice",
+    question: "急性呼吸衰竭与慢性呼吸衰竭的区别是",
+    options: ["起病快慢", "PaO₂下降程度", "机体代偿能力", "临床表现", "以上都是"],
+    answer: "E",
+    analysis: "急性呼吸衰竭起病快、机体来不及代偿，表现为严重低氧血症；慢性呼吸衰竭起病慢、代偿充分，以低氧血症为主。",
+    stars: 3
+  },
+  {
+    id: 217,
+    subject: "pathophys",
+    type: "choice",
+    question: "肺性脑病的发生机制是",
+    options: ["CO₂潴留→PaCO₂↑→脑血管扩张", "脑水肿", "细胞内酸中毒", "意识障碍、昏迷", "以上都是"],
+    answer: "E",
+    analysis: "肺性脑病因CO₂潴留→脑血管扩张→脑水肿；细胞内酸中毒→脑细胞功能障碍→意识障碍、昏迷。",
+    stars: 3
+  },
+  {
+    id: 218,
+    subject: "pathophys",
+    type: "choice",
+    question: "休克早期（代偿期）的临床表现是",
+    options: ["面色苍白", "心率加快", "血压正常或略降", "尿量减少", "以上都是"],
+    answer: "E",
+    analysis: "休克早期交感-肾上腺髓质系统激活→儿茶酚胺↑→皮肤、内脏血管收缩，表现为面色苍白、心率↑、血压正常或略降、尿量↓。",
+    stars: 3
+  },
+  {
+    id: 219,
+    subject: "pathophys",
+    type: "choice",
+    question: "休克难治期（DIC期）的后果是",
+    options: ["微血管麻痹", "多器官功能障碍", "出血倾向", "治疗困难", "以上都是"],
+    answer: "E",
+    analysis: "休克难治期发生DIC，微血管机械性堵塞和凝血因子消耗→出血、多器官衰竭，是休克的终末阶段。",
+    stars: 3
+  },
+  {
+    id: 220,
+    subject: "pathophys",
+    type: "choice",
+    question: "代谢性酸中毒的原因不包括",
+    options: ["固定酸产生过多", "碳酸氢盐丢失", "肾脏排酸障碍", "CO₂排出过多", "含氯酸性物质摄入"],
+    answer: "D",
+    analysis: "代谢性酸中毒因固定酸产生↑（糖尿病酮症、乳酸酸中毒）、HCO₃⁻丢失↑（腹泻）、肾脏排酸↓；CO₂排出过多导致呼吸性碱中毒。",
+    stars: 2
+  },
+  {
+    id: 221,
+    subject: "pathophys",
+    type: "choice",
+    question: "高钾血症对心脏的影响是",
+    options: ["心肌兴奋性↑", "心肌传导性↓", "心律失常", "心脏停搏于舒张期", "以上都是"],
+    answer: "E",
+    analysis: "高钾血症使心肌兴奋性先↑后↓，传导性↓，自律性↓，出现各种心律失常，严重时心脏停搏于舒张期。",
+    stars: 3
+  },
+  {
+    id: 222,
+    subject: "pathophys",
+    type: "choice",
+    question: "低钾血症对心脏的影响是",
+    options: ["心肌兴奋性↑", "心律失常", "心电图示U波", "QT间期延长", "以上都是"],
+    answer: "E",
+    analysis: "低钾血症使心肌兴奋性↑、传导性↓、自律性↑，出现心律失常，心电图特征为U波、QT延长。",
+    stars: 3
+  },
+  {
+    id: 223,
+    subject: "pathophys",
+    type: "choice",
+    question: "水中毒（稀释性低钠血症）的特点是",
+    options: ["血钠↓、血浆渗透压↓", "细胞内水肿", "脑细胞水肿", "严重者可致脑疝", "以上都是"],
+    answer: "E",
+    analysis: "水中毒时水潴留>钠潴留，细胞外液稀释→渗透压↓→细胞内水肿，脑细胞水肿可致脑疝。",
+    stars: 3
+  },
+  
+  // 判断题 224-231
+  {
+    id: 224,
+    subject: "pathophys",
+    type: "judge",
+    question: "低渗性脱水时，由于细胞外液渗透压降低，水从细胞外向细胞内转移，引起细胞水肿。",
+    answer: true,
+    analysis: "低渗性脱水时，血清钠<130mmol/L，水向细胞内转移引起细胞水肿，严重可致脑细胞水肿。",
+    stars: 2
+  },
+  {
+    id: 225,
+    subject: "pathophys",
+    type: "judge",
+    question: "低张性缺氧时，血氧饱和度和PaO₂均下降；血液性缺氧时，PaO₂正常，血氧容量下降。",
+    answer: true,
+    analysis: "不同类型缺氧的血气特点不同：低张性缺氧PaO₂和血氧饱和度↓；血液性缺氧PaO₂正常，血氧含量/容量↓。",
+    stars: 3
+  },
+  {
+    id: 226,
+    subject: "pathophys",
+    type: "judge",
+    question: "发热时体温调定点上移，退热时体温调定点恢复到正常水平。",
+    answer: true,
+    analysis: "发热激活物→内生致热原→体温调定点上移→体温↑；退热时调定点恢复，机体散热增加，体温下降。",
+    stars: 3
+  },
+  {
+    id: 227,
+    subject: "pathophys",
+    type: "judge",
+    question: "休克早期（代偿期）以交感-肾上腺髓质系统激活为主，休克进展期（失代偿期）以酸中毒和微血管扩张为主。",
+    answer: true,
+    analysis: "休克代偿期：儿茶酚胺↑→血管收缩；失代偿期：组织缺氧→酸中毒→血管扩张→血压↓。",
+    stars: 3
+  },
+  {
+    id: 228,
+    subject: "pathophys",
+    type: "judge",
+    question: "肝性脑病的诱因包括上消化道出血、高蛋白饮食、便秘、感染、利尿剂等。",
+    answer: true,
+    analysis: "这些诱因可增加氨的产生、减少氨的清除、或降低脑对氨的耐受性，诱发肝性脑病。",
+    stars: 3
+  },
+  {
+    id: 229,
+    subject: "pathophys",
+    type: "judge",
+    question: "肺通气/换气障碍均可导致PaO₂下降，但换气障碍时PaCO₂可正常或升高。",
+    answer: true,
+    analysis: "通气障碍早期PaO₂↓、PaCO₂↑；换气障碍（弥散障碍、V/Q失调）以PaO₂↓为主，PaCO₂可正常或↑。",
+    stars: 3
+  },
+  {
+    id: 230,
+    subject: "pathophys",
+    type: "judge",
+    question: "慢性肾衰竭发展过程中，健存肾单位逐渐减少，出现高血压、贫血、钙磷代谢障碍等并发症。",
+    answer: true,
+    analysis: "CRF是进行性发展过程，肾单位不断破坏，健存肾单位代偿性高滤过，最终代偿失调出现各种并发症。",
+    stars: 3
+  },
+  {
+    id: 231,
+    subject: "pathophys",
+    type: "judge",
+    question: "心功能不全时，神经体液激活（RAAS、交感神经）是代偿反应，但长期激活可加重心脏负担导致心室重构。",
+    answer: true,
+    analysis: "急性代偿：维持心输出量；慢性失代偿：持续激活导致心肌耗氧↑、水钠潴留、心室重构，加重心衰。",
+    stars: 3
+  }
+];
+// ========================================
+// 药理学题目 - pharmacology.js
+// ========================================
+
+const PHARMACOLOGY_QUESTIONS = [
+  // 选择题 250-299
+  {
+    id: 250,
+    subject: "pharmacology",
+    type: "choice",
+    question: "毛果芸香碱的作用是",
+    options: ["缩瞳、调节麻痹", "缩瞳、调节痉挛", "扩瞳、调节麻痹", "扩瞳、调节痉挛", "降低眼压"],
+    answer: "B",
+    analysis: "毛果芸香碱激动M受体，使瞳孔括约肌收缩（缩瞳）、睫状肌收缩（调节痉挛），用于青光眼治疗。",
+    stars: 2
+  },
+  {
+    id: 251,
+    subject: "pharmacology",
+    type: "choice",
+    question: "阿托品的作用不包括",
+    options: ["扩瞳", "调节麻痹", "解痉", "抑制腺体分泌", "缩瞳"],
+    answer: "E",
+    analysis: "阿托品阻断M受体，扩瞳（瞳孔括约肌松弛）、调节麻痹（睫状肌松弛）、解痉、抑制腺体分泌；扩瞳不是缩瞳。",
+    stars: 2
+  },
+  {
+    id: 252,
+    subject: "pharmacology",
+    type: "choice",
+    question: "有机磷酸酯中毒的机制是",
+    options: ["抑制胆碱酯酶", "激活胆碱酯酶", "抑制胆碱能受体", "促进乙酰胆碱释放", "阻断肾上腺素能受体"],
+    answer: "A",
+    analysis: "有机磷酸酯与胆碱酯酶牢固结合（磷酰化）→胆碱酯酶失活→乙酰胆碱堆积→M/N受体过度兴奋。",
+    stars: 3
+  },
+  {
+    id: 253,
+    subject: "pharmacology",
+    type: "choice",
+    question: "有机磷酸酯中毒的解救药是",
+    options: ["阿托品", "氯解磷定", "阿托品+氯解磷定", "肾上腺素", "去甲肾上腺素"],
+    answer: "C",
+    analysis: "阿托品对抗M样症状（早期、足量）；氯解磷定复活胆碱酯酶（防老化），两者合用是标准治疗。",
+    stars: 3
+  },
+  {
+    id: 254,
+    subject: "pharmacology",
+    type: "choice",
+    question: "肾上腺素对心脏的作用是",
+    options: ["正性肌力、正性频率", "正性传导", "加快心率", "增加心肌耗氧", "以上都是"],
+    answer: "E",
+    analysis: "肾上腺素激动β₁受体→心脏正性肌力、正性频率、正性传导→心输出量↑→心肌耗氧↑。",
+    stars: 3
+  },
+  {
+    id: 255,
+    subject: "pharmacology",
+    type: "choice",
+    question: "肾上腺素的临床应用不包括",
+    options: ["心脏骤停", "过敏性休克", "支气管哮喘", "器质性心脏病", "局部止血"],
+    answer: "D",
+    analysis: "肾上腺素用于心脏骤停（首选）、过敏性休克（首选）、支气管哮喘急性发作、局部止血；器质性心脏病慎用。",
+    stars: 3
+  },
+  {
+    id: 256,
+    subject: "pharmacology",
+    type: "choice",
+    question: "心脏骤停时，肾上腺素的给药途径是",
+    options: ["皮下注射", "肌肉注射", "静脉注射", "吸入", "口服"],
+    answer: "C",
+    analysis: "心脏骤停时肾上腺素静脉注射（或心内注射），是心肺复苏的标准用药。",
+    stars: 2
+  },
+  {
+    id: 257,
+    subject: "pharmacology",
+    type: "choice",
+    question: "地西泮的作用不包括",
+    options: ["抗焦虑", "镇静催眠", "抗惊厥抗癫痫", "麻醉", "中枢性肌松"],
+    answer: "D",
+    analysis: "地西泮有抗焦虑、镇静催眠、抗惊厥、抗癫痫、中枢性肌松作用，但无麻醉作用。",
+    stars: 3
+  },
+  {
+    id: 258,
+    subject: "pharmacology",
+    type: "choice",
+    question: "地西泮的作用机制是",
+    options: ["激动GABA受体", "增强GABA能神经传递", "抑制GABA代谢", "促进GABA释放", "阻断GABA受体"],
+    answer: "B",
+    analysis: "地西泮作用于GABA受体-苯二氮卓受体-Cl⁻通道复合物，增强GABA能神经传递，开放Cl⁻通道。",
+    stars: 3
+  },
+  {
+    id: 259,
+    subject: "pharmacology",
+    type: "choice",
+    question: "苯妥英钠的作用不包括",
+    options: ["抗癫痫大发作", "抗癫痫小发作", "抗三叉神经痛", "抗心律失常", "膜稳定作用"],
+    answer: "B",
+    analysis: "苯妥英钠对癫痫大发作有效，对小发作无效（可能加重）；有膜稳定作用，可用于三叉神经痛和室性心律失常。",
+    stars: 2
+  },
+  {
+    id: 260,
+    subject: "pharmacology",
+    type: "choice",
+    question: "抗癫痫治疗的原则是",
+    options: ["单药治疗优先", "小剂量开始", "逐渐减量停药", "联合用药条件：单药无效", "以上都是"],
+    answer: "E",
+    analysis: "抗癫痫治疗遵循单药、增量慢、疗程足、停药缓、换药过渡的原则。",
+    stars: 2
+  },
+  {
+    id: 261,
+    subject: "pharmacology",
+    type: "choice",
+    question: "氯丙嗪的锥体外系反应不包括",
+    options: ["帕金森综合征", "静坐不能", "急性肌张力障碍", "迟发性运动障碍", "惊厥"],
+    answer: "E",
+    analysis: "氯丙嗪阻断多巴胺受体引起锥体外系反应，包括帕金森综合征、静坐不能、急性肌张力障碍、迟发性运动障碍。",
+    stars: 3
+  },
+  {
+    id: 262,
+    subject: "pharmacology",
+    type: "choice",
+    question: "吗啡镇痛的作用机制是",
+    options: ["激动μ受体", "激动δ受体", "激动κ受体", "阻断阿片受体", "抑制前列腺素"],
+    answer: "A",
+    analysis: "吗啡激动μ受体（主）、κ受体，产生镇痛、镇静、欣快感、呼吸抑制等作用。",
+    stars: 2
+  },
+  {
+    id: 263,
+    subject: "pharmacology",
+    type: "choice",
+    question: "解热镇痛药退热的机制是",
+    options: ["抑制中枢COX", "抑制外周COX", "抑制中枢PGE合成", "促进散热", "A+C"],
+    answer: "E",
+    analysis: "解热镇痛药抑制中枢COX→PGE合成↓→体温调定点恢复到正常，同时促进散热使体温下降。",
+    stars: 3
+  },
+  {
+    id: 264,
+    subject: "pharmacology",
+    type: "choice",
+    question: "阿司匹林小剂量（75-100mg）的作用是",
+    options: ["抗炎", "解热", "镇痛", "抗血小板聚集", "抗风湿"],
+    answer: "D",
+    analysis: "小剂量阿司匹林抑制血小板TXA₂合成→抗血小板聚集，用于心脑血管疾病预防；大剂量才有解热镇痛抗炎作用。",
+    stars: 3
+  },
+  {
+    id: 265,
+    subject: "pharmacology",
+    type: "choice",
+    question: "呋塞米（速尿）的作用部位是",
+    options: ["近曲小管", "髓袢升支粗段", "远曲小管", "集合管", "远曲小管和集合管"],
+    answer: "B",
+    analysis: "呋塞米抑制髓袢升支粗段Na⁺-K⁺-2Cl⁻同向转运体，是袢利尿药（高效利尿药）。",
+    stars: 3
+  },
+  {
+    id: 266,
+    subject: "pharmacology",
+    type: "choice",
+    question: "呋塞米的不良反应不包括",
+    options: ["低钾血症", "低钠血症", "高尿酸血症", "高钙血症", "耳毒性"],
+    answer: "D",
+    analysis: "呋塞米不良反应包括低钾、低钠、低氯碱血症，高尿酸血症（痛风），耳毒性（听力下降），血糖↑等。",
+    stars: 3
+  },
+  {
+    id: 267,
+    subject: "pharmacology",
+    type: "choice",
+    question: "螺内酯的作用机制是",
+    options: ["抑制Na⁺-K⁺-2Cl⁻同向转运体", "拮抗醛固酮受体", "抑制碳酸酐酶", "阻断水通道", "促进钠排泄"],
+    answer: "B",
+    analysis: "螺内酯是醛固酮受体拮抗剂，保钾排钠，利尿作用弱、慢、久。与呋塞米合用可增强疗效、减少低钾。",
+    stars: 3
+  },
+  {
+    id: 268,
+    subject: "pharmacology",
+    type: "choice",
+    question: "肝硬化腹水的首选利尿药是",
+    options: ["呋塞米", "氢氯噻嗪", "螺内酯", "呋塞米+螺内酯", "甘露醇"],
+    answer: "D",
+    analysis: "肝硬化腹水首选螺内酯（基础）+呋塞米（协同），既保钾又利尿，减少不良反应。",
+    stars: 3
+  },
+  {
+    id: 269,
+    subject: "pharmacology",
+    type: "choice",
+    question: "ACEI的降压机制是",
+    options: ["抑制血管紧张素转化酶", "阻断AT₁受体", "抑制肾素活性", "减少醛固酮分泌", "A+D"],
+    answer: "E",
+    analysis: "ACEI抑制血管紧张素转化酶→减少AngⅡ生成→舒血管+减少醛固酮→降压。常见不良反应：干咳、血管性水肿。",
+    stars: 2
+  },
+  {
+    id: 270,
+    subject: "pharmacology",
+    type: "choice",
+    question: "强心苷对心脏的作用是",
+    options: ["正性肌力", "负性频率", "负性传导", "利尿", "以上都是"],
+    answer: "E",
+    analysis: "强心苷正性肌力（增加心输出量）、负性频率（减慢心率）、负性传导（减慢房室结）。",
+    stars: 3
+  },
+  {
+    id: 271,
+    subject: "pharmacology",
+    type: "choice",
+    question: "强心苷的临床应用是",
+    options: ["心房颤动", "心房扑动", "充血性心力衰竭", "室性心律失常", "A+B+C"],
+    answer: "E",
+    analysis: "强心苷用于房颤/房扑（减慢房室结传导）、心衰（正性肌力）；室性心律失常禁用（可能加重）。",
+    stars: 3
+  },
+  {
+    id: 272,
+    subject: "pharmacology",
+    type: "choice",
+    question: "硝酸甘油抗心绞痛的主要机制是",
+    options: ["扩张静脉↓前负荷", "扩张动脉↓后负荷", "降低心肌耗氧量", "改善心肌供血", "以上都是"],
+    answer: "E",
+    analysis: "硝酸甘油扩张静脉（为主）→↓回心血量→↓前负荷；扩张动脉→↓后负荷；降低心肌耗氧量，改善供需失衡。",
+    stars: 3
+  },
+  {
+    id: 273,
+    subject: "pharmacology",
+    type: "choice",
+    question: "肺水肿合并心衰的药物治疗首选",
+    options: ["硝酸甘油+呋塞米", "硝酸甘油+吗啡", "呋塞米+吗啡", "硝酸甘油+呋塞米+吗啡", "普萘洛尔+吗啡"],
+    answer: "B",
+    analysis: "肺水肿合并心衰首选硝酸甘油（扩血管↓前负荷）+吗啡（镇静、↓心肌耗氧、扩血管）。",
+    stars: 3
+  },
+  {
+    id: 274,
+    subject: "pharmacology",
+    type: "choice",
+    question: "肝素的抗凝机制是",
+    options: ["增强抗凝血酶III", "抑制凝血酶", "抑制凝血因子IIa、Xa", "口服有效", "A+B"],
+    answer: "E",
+    analysis: "肝素增强抗凝血酶III活性→抑制凝血酶（IIa）和Xa等；不能口服，需监测APTT。",
+    stars: 2
+  },
+  {
+    id: 275,
+    subject: "pharmacology",
+    type: "choice",
+    question: "华法林的抗凝机制是",
+    options: ["抑制维生素K依赖凝血因子", "增强抗凝血酶III", "抑制凝血酶", "抑制血小板", "口服无效"],
+    answer: "A",
+    analysis: "华法林抑制维生素K环氧化物还原酶→阻止维生素K再生→抑制II、VII、IX、X因子合成；口服有效，需监测PT/INR。",
+    stars: 2
+  },
+  {
+    id: 276,
+    subject: "pharmacology",
+    type: "choice",
+    question: "胰岛素的药理作用不包括",
+    options: ["促进葡萄糖利用", "促进K⁺进入细胞", "促进糖原合成", "促进脂肪分解", "促进蛋白质合成"],
+    answer: "D",
+    analysis: "胰岛素促进葡萄糖摄取利用、糖原合成、脂肪合成、蛋白质合成；抑制脂肪分解（是脂解激素的拮抗剂）。",
+    stars: 3
+  },
+  {
+    id: 277,
+    subject: "pharmacology",
+    type: "choice",
+    question: "胰岛素最常见和最严重的不良反应是",
+    options: ["低血糖", "过敏反应", "脂肪萎缩", "耐受性", "高钾血症"],
+    answer: "A",
+    analysis: "低血糖是胰岛素最常见和最严重的不良反应，因剂量过大、进食少或运动多所致。",
+    stars: 3
+  },
+  {
+    id: 278,
+    subject: "pharmacology",
+    type: "choice",
+    question: "青霉素的作用机制是",
+    options: ["抑制细菌细胞壁合成", "抑制蛋白质合成", "抑制核酸合成", "抑制叶酸代谢", "影响细胞膜"],
+    answer: "A",
+    analysis: "青霉素抑制转肽酶→阻断肽聚糖合成→细胞壁缺损→细菌破裂死亡；对繁殖期细菌作用强。",
+    stars: 2
+  },
+  {
+    id: 279,
+    subject: "pharmacology",
+    type: "choice",
+    question: "喹诺酮类药物的作用机制是",
+    options: ["抑制DNA回旋酶", "抑制拓扑异构酶IV", "抑制蛋白质合成", "抑制细胞壁合成", "A+B"],
+    answer: "E",
+    analysis: "喹诺酮类抑制DNA回旋酶（主）和拓扑异构酶IV→阻断DNA复制→杀菌；广谱，对G⁻菌作用强。",
+    stars: 2
+  },
+  {
+    id: 280,
+    subject: "pharmacology",
+    type: "choice",
+    question: "β-内酰胺类抗生素不包括",
+    options: ["青霉素", "头孢菌素", "红霉素", "阿莫西林", "氨苄西林"],
+    answer: "C",
+    analysis: "红霉素是大环内酯类；β-内酰胺类包括青霉素类、头孢菌素类、碳青霉烯类等。",
+    stars: 2
+  },
+  {
+    id: 281,
+    subject: "pharmacology",
+    type: "choice",
+    question: "溃疡性结肠炎的首选治疗药物是",
+    options: ["糖皮质激素", "柳氮磺胺吡啶（SASP）", "硫唑嘌呤", "甲硝唑", "5-氨基水杨酸"],
+    answer: "B",
+    analysis: "柳氮磺胺吡啶（SASP）是溃疡性结肠炎的首选药物，在肠道分解为5-ASA发挥作用。",
+    stars: 2
+  },
+  {
+    id: 282,
+    subject: "pharmacology",
+    type: "choice",
+    question: "药物半衰期（t½）的意义是",
+    options: ["反映药物消除速度", "决定给药间隔", "连续给药达稳态时间", "血药浓度下降一半所需时间", "以上都是"],
+    answer: "E",
+    analysis: "半衰期是血药浓度下降一半的时间，反映消除速度，决定给药间隔，约5个t½达稳态。",
+    stars: 2
+  },
+  {
+    id: 283,
+    subject: "pharmacology",
+    type: "choice",
+    question: "停药反应（反跳现象）的特点是",
+    options: ["突然停药后原有疾病加剧", "需逐渐减量停药", "机体产生适应", "长时间用药后出现", "以上都是"],
+    answer: "E",
+    analysis: "停药反应是长期用药后突然停药，原有疾病加重的现象，如高血压突然停药血压反跳，需逐渐减量。",
+    stars: 2
+  },
+  {
+    id: 284,
+    subject: "pharmacology",
+    type: "choice",
+    question: "硝酸甘油与β受体阻断药合用治疗心绞痛的优点是",
+    options: ["协同降低心肌耗氧", "β受体阻断药抵消硝酸甘油的心率加快", "硝酸甘油抵消β受体阻断药的心肌收缩力增加", "减少不良反应", "以上都是"],
+    answer: "E",
+    analysis: "两者合用可协同降低心肌耗氧量，互相抵消不良反应（硝酸甘油反射性心率加快、β受体阻断药加重心室容积）。",
+    stars: 2
+  },
+  {
+    id: 285,
+    subject: "pharmacology",
+    type: "choice",
+    question: "强心苷中毒引起心律失常的机制是",
+    options: ["过度抑制Na⁺/K⁺-ATP酶", "细胞内Ca²⁺↑", "迷走神经张力↑", "异位起搏点兴奋", "以上都是"],
+    answer: "E",
+    analysis: "强心苷抑制Na⁺/K⁺-ATP酶→细胞内Na⁺↑→Na⁺/Ca²⁺交换↓→细胞内Ca²⁺↑（正性肌力）+迷走张力↑→心律失常。",
+    stars: 3
+  },
+  
+  // 判断题 286-293
+  {
+    id: 286,
+    subject: "pharmacology",
+    type: "judge",
+    question: "毛果芸香碱激动M受体，产生缩瞳、调节痉挛、促进腺体分泌作用，可用于青光眼和口腔干燥的治疗。",
+    answer: true,
+    analysis: "毛果芸香碱是拟胆碱药，M受体激动剂，缩瞳降眼压，促进汗腺、唾液腺分泌。",
+    stars: 2
+  },
+  {
+    id: 287,
+    subject: "pharmacology",
+    type: "judge",
+    question: "阿托品可对抗有机磷酸酯中毒的M样症状，但无法复活胆碱酯酶，需与解磷定合用。",
+    answer: true,
+    analysis: "阿托品阻断M受体，对抗M样症状；解磷定复活胆碱酯酶，两者合用是标准治疗。",
+    stars: 3
+  },
+  {
+    id: 288,
+    subject: "pharmacology",
+    type: "judge",
+    question: "地西泮是癫痫持续状态的首选药物，作用机制是增强GABA能神经传递。",
+    answer: true,
+    analysis: "地西泮增强GABA-GABA受体-Cl⁻通道功能，是癫痫持续状态的首选静脉用药。",
+    stars: 3
+  },
+  {
+    id: 289,
+    subject: "pharmacology",
+    type: "judge",
+    question: "阿司匹林小剂量抑制TXA₂合成起抗血小板作用，大剂量抑制PG起抗炎、解热、镇痛作用。",
+    answer: true,
+    analysis: "阿司匹林具有剂量依赖性双向作用，小剂量（75-100mg）抗血小板，大剂量（>300mg）解热镇痛抗炎。",
+    stars: 3
+  },
+  {
+    id: 290,
+    subject: "pharmacology",
+    type: "judge",
+    question: "呋塞米作用于髓袢升支粗段，抑制Na⁺-K⁺-2Cl⁻同向转运体，是高效利尿药。",
+    answer: true,
+    analysis: "呋塞米是袢利尿药，抑制髓袢升支粗段Na⁺-K⁺-2Cl⁻同向转运体，阻断NaCl重吸收。",
+    stars: 3
+  },
+  {
+    id: 291,
+    subject: "pharmacology",
+    type: "judge",
+    question: "强心苷通过抑制Na⁺/K⁺-ATP酶产生正性肌力作用，也可引起心律失常。",
+    answer: true,
+    analysis: "强心苷抑制心肌细胞Na⁺/K⁺-ATP酶→细胞内Na⁺↑→Na⁺/Ca²⁺交换↓→细胞内Ca²⁺↑→正性肌力；但过量可致心律失常。",
+    stars: 3
+  },
+  {
+    id: 292,
+    subject: "pharmacology",
+    type: "judge",
+    question: "肝硬化腹水首选螺内酯联合呋塞米治疗，既保钾又协同利尿。",
+    answer: true,
+    analysis: "螺内酯拮抗醛固酮→保钾排钠，呋塞米高效利尿，两者合用可增强疗效、减少低钾血症发生。",
+    stars: 3
+  },
+  {
+    id: 293,
+    subject: "pharmacology",
+    type: "judge",
+    question: "硝酸甘油通过释放NO激活鸟苷酸环化酶→cGMP↑→血管平滑肌松弛，主要扩张静脉。",
+    answer: true,
+    analysis: "硝酸甘油在血管平滑肌细胞内释放NO→激活sGC→cGMP↑→PKG激活→血管松弛；主要扩张静脉（降前负荷）。",
+    stars: 3
+  }
+];
+// ========================================
+// 大题押题 - cases.js
+// ========================================
+
+const CASE_QUESTIONS = [
+  {
+    id: "case1",
+    title: "病例分析一：地震创伤失血急救",
+    subjects: ["anatomy", "physiology", "pharmacology"],
+    caseDescription: `患者，男，42岁，因地震被倒塌房屋压伤2小时后获救。入院时神志淡漠，面色苍白，四肢湿冷。查体：T 36.2℃，P 120次/分，R 24次/分，BP 80/50mmHg。左侧下肢明显畸形，有活动性出血。
+
+实验室检查：Hb 80g/L（↓），红细胞压积 0.25（↓），血肌酐正常，尿量减少。`,
+    questions: [
+      {
+        q: "【解剖学问题1.1】患者左侧下肢骨折，若需手术探查，请列出臂丛神经的5大分支及其来源束？",
+        answer: `【臂丛神经五大分支】（桡侧吻顺序）
+• 【正中神经】— 来自外侧束和内侧束
+• 【尺神经】— 来自内侧束
+• 【桡神经】— 来自后束
+• 【肌皮神经】— 来自外侧束
+• 【腋神经】— 来自后束
+
+记忆口诀："外正内尺，后裹腋桡"`
+      },
+      {
+        q: "【解剖学问题1.2】若损伤坐骨神经，可能出现哪些感觉和运动障碍？",
+        answer: `【感觉障碍】
+• 小腿外侧、足背、足底感觉减退或消失
+• 坐骨神经支配小腿和足部感觉
+
+【运动障碍】
+• 膝关节屈曲障碍（半腱肌、半膜肌、股二头肌）
+• 足背屈/跖屈障碍（小腿前群、后群肌瘫痪）
+• 小腿肌肉萎缩
+• 出现"跨域步态"`
+      },
+      {
+        q: "【生理学问题2.1-1】该患者出现了失血性休克，请分析机体在急性失血时会激活哪些代偿机制？主要通过哪些途径？",
+        answer: `【急性失血的代偿机制】
+
+1. 【神经调节】
+   颈动脉窦/主动脉弓压力感受器→传入冲动↓→延髓心血管中枢→心交感神经和缩血管神经兴奋
+   
+2. 【体液调节】
+   • 肾素-血管紧张素-醛固酮系统（RAAS）激活→血管收缩、钠水潴留
+   • 抗利尿激素（ADH）分泌↑→水重吸收↑
+   • 肾上腺髓质分泌儿茶酚胺↑→心率↑、血管收缩
+
+3. 【组织液回流代偿】
+   毛细血管血压↓→组织液回流增加→补充血浆容量`
+      },
+      {
+        q: "【生理学问题2.1-2】请分析患者血压下降后，心脏泵血过程会发生什么变化？",
+        answer: `【血压下降后心脏泵血的变化】
+
+1. 【压力感受器反射】
+   BP↓→动脉压力感受器传入冲动↓→心交感中枢兴奋→心率↑、心肌收缩力↑
+
+2. 【心输出量调节】
+   失血→回心血量↓→每搏输出量↓→心率代偿性加快（Frank-Starling机制）
+
+3. 【心动周期变化】
+   • 快速射血期、减慢射血期时间缩短
+   • 等容收缩期延长（心室收缩增强以克服低血压）
+   • 快速充盈期缩短（舒张时间减少）`
+      },
+      {
+        q: "【生理学问题2.2】患者呼吸频率加快（24次/分），请分析肺通气的动力？",
+        answer: `【肺通气的动力】
+
+1. 【原动力】
+   呼吸肌运动（膈肌+肋间外肌收缩）
+   
+2. 【直接动力】
+   肺内压与大气压差
+   • 吸气时：肺内压<大气压（气体进入肺）
+   • 呼气时：肺内压>大气压（气体呼出）
+
+3. 【必要条件】
+   • 胸膜腔负压（维持肺扩张状态）
+   • 肺弹性回缩力（呼气的动力）
+
+记忆：原动力是呼吸肌运动，直接动力是压力差，必要条件是胸膜腔负压和肺弹性回缩力`
+      },
+      {
+        q: "【药理学问题3.1-1】针对休克状态，请选择合适的升压药，并说明其作用机制？",
+        answer: `【休克升压药选择】
+
+首选【去甲肾上腺素】或【多巴胺】
+
+【去甲肾上腺素】
+• 机制：激动α₁受体→强烈收缩血管→升压
+• 注意：小剂量可激动β₁受体强心，大剂量主要升压
+
+【多巴胺】
+• 低剂量：激动D₁→扩肾血管（保护肾血流）
+• 中剂量：激动β₁→强心
+• 高剂量：激动α₁→升压
+
+【临床应用】
+用于各种类型的休克（心源性休克、失血性休克等）`
+      },
+      {
+        q: "【药理学问题3.1-2】患者合并肺水肿，请制定用药方案？",
+        answer: `【肺水肿合并心衰治疗方案】
+
+首选【硝酸甘油+吗啡】
+
+【硝酸甘油】
+• 扩张静脉↓回心血量（↓前负荷）
+• 扩张动脉↓外周阻力（↓后负荷）
+• 降低心肌耗氧量
+
+【吗啡】
+• 镇静、消除焦虑（减轻心脏负荷）
+• 降低心肌耗氧
+• 扩张血管（轻度）
+
+【联合用药优点】
+两者协同降低心肌耗氧，同时硝酸甘油降低前负荷，吗啡镇静减轻心脏负担`
+      },
+      {
+        q: "【药理学问题3.1-3】若需使用利尿药减轻肺水肿，应选择哪种利尿药？机制是什么？",
+        answer: `【利尿药选择】
+
+选择【呋塞米】（袢利尿药）
+
+【作用机制】
+• 抑制髓袢升支粗段【Na⁺-K⁺-2Cl⁻同向转运体】
+• 阻断NaCl重吸收
+• 强效利尿→减少血容量→减轻心脏前负荷
+
+【临床应用】
+急性肺水肿，特别是合并心衰时
+
+【特点】
+• 起效快（静脉注射5-10min起效）
+• 强效利尿
+• 可扩张血管（减轻心脏前后负荷）`
+      },
+      {
+        q: "【药理学问题3.2-1】麻醉前给药可选用地西泮，说明其作用和机制？",
+        answer: `【地西泮的作用】
+
+1. 【抗焦虑】— 消除患者紧张情绪
+2. 【镇静】— 使患者安静合作
+3. 【遗忘作用】— 对麻醉前操作记忆缺失
+4. 【抗惊厥】— 预防麻醉意外
+
+【作用机制】
+增强【GABA】能神经传递
+• 作用于GABA受体-苯二氮卓受体-Cl⁻通道复合物
+• 增加Cl⁻通道开放频率
+• 增强中枢抑制作用`
+      },
+      {
+        q: "【药理学问题3.2-2】若需使用局麻药进行局部麻醉，利多卡因和普鲁卡因各有什么特点？",
+        answer: `【局麻药比较】
+
+| 药物 | 特点 |
+|------|------|
+| 【利多卡因】 | 穿透力强，可用于所有麻醉（表面、浸润、传导、硬膜外）；毒性中等；起效快，持续时间适中 |
+| 【普鲁卡因】 | 穿透力弱，不用于表面麻醉；毒性小；常用于浸润麻醉；持续时间短 |
+
+【临床选择】
+• 表面麻醉→丁卡因、利多卡因
+• 浸润麻醉→普鲁卡因、利多卡因
+• 传导麻醉→利多卡因、布比卡因
+• 硬膜外麻醉→利多卡因、布比卡因`
+      }
+    ]
+  },
+  {
+    id: "case2",
+    title: "病例分析二：肝相关疾病",
+    subjects: ["pathology", "pathophys", "biochemistry"],
+    caseDescription: `患者，男，55岁，慢性乙型肝炎病史15年，因"腹胀、乏力1个月，加重伴呕血1天"入院。
+
+查体：T 37.2℃，P 88次/分，R 20次/分，BP 100/60mmHg。面色晦暗，颈部及前胸可见【蜘蛛痣】，肝掌（+）。腹部膨隆，腹壁静脉显露，肝肋下未触及，脾肋下3cm，腹部移动性浊音（+）。双下肢水肿。
+
+实验室检查：Hb 85g/L（↓），ALT 85U/L（↑），AST 120U/L（↑），ALB 28g/L（↓↓），TBIL 45μmol/L（↑），PT 18秒（↑）。血氨↑。胃镜：食管静脉曲张（重度）。
+
+入院后给予止血、保肝、利尿、营养支持治疗，3天后患者出现意识模糊、行为异常、定向力障碍。`,
+    questions: [
+      {
+        q: "【病理学问题1.1】该患者的病理诊断最可能是什么？请分析其形态学特点？",
+        answer: `【病理诊断】门脉性肝硬化
+
+【形态学特点】
+
+1. 【肉眼观】
+   • 肝脏体积缩小，重量减轻
+   • 表面呈【小结节】状（结节大小较一致，直径<1cm）
+
+2. 【镜下观】
+   • 【假小叶】形成（肝小叶正常结构被纤维组织分割）
+   • 假小叶内肝细胞排列紊乱
+   • 纤维间隔内有胆管增生和血管
+   • 中央静脉偏位或缺如（或多个中央静脉）
+   • 肝细胞再生（双核细胞↑）`
+      },
+      {
+        q: "【病理学问题1.2】请分析门脉高压症的发病机制及主要临床表现？",
+        answer: `【发病机制】（窦性阻塞）
+
+• 肝内纤维组织增生→压迫肝内血管→门静脉血流受阻
+• 肝窦毛细血管化→肝血窦变窄→门脉阻力↑
+• 肝细胞坏死→肝血管改建→门脉高压
+
+【临床表现】
+
+1. 【腹水】
+   门脉压↑ + 白蛋白↓（肝脏合成↓）+ 醛固酮↑（灭活↓）
+
+2. 【侧支循环形成】
+   • 食管静脉丛曲张→呕血（可致死）
+   • 脐周静脉网曲张→"海蛇头"
+   • 直肠静脉丛曲张→便血
+
+3. 【脾大、脾功能亢进】
+
+4. 【黄疸】（晚期）`
+      },
+      {
+        q: "【病理学问题1.3】患者颈部出现蜘蛛痣，请解释其机制？",
+        answer: `【蜘蛛痣形成机制】
+
+• 蜘蛛痣=体内【雌激素】水平↑
+• 机制：肝硬化时【肝脏灭活雌激素能力↓】→雌激素↑→小动脉扩张→蜘蛛痣形成
+
+【临床特点】
+• 好发部位：颈部、前胸、手背
+• 形状：中心小红点，周围放射状小血管分支
+• 压迫中心可褪色，松手恢复
+
+【相关表现】
+• 肝掌（雌激素↑→小动脉扩张）
+• 男性乳房发育（雌激素↑）`
+      },
+      {
+        q: "【病理生理学问题2.1】患者出现意识障碍，考虑肝性脑病，请分析其发病机制？",
+        answer: `【肝性脑病发病机制】
+
+1. 【氨中毒学说】（主要机制）
+   • 肝功能障碍→氨代谢障碍→血氨↑
+   • 氨透过血脑屏障→脑毒性（干扰能量代谢、神经递质）
+
+2. 【假性神经递质学说】
+   • 苯乙醇胺、羟苯乙醇胺↑
+   • 取代正常神经递质（多巴胺、去甲肾上腺素）
+   • 导致意识障碍
+
+3. 【氨基酸失衡学说】
+   • 支链氨基酸（BCAA）↓/芳香氨基酸（AAA）↑
+   • 穿过血脑屏障比例改变
+   • 脑内假性神经递质↑
+
+4. 【γ-氨基丁酸学说】
+   • GABA↑→神经抑制↑`
+      },
+      {
+        q: "【病理生理学问题2.2】患者上消化道出血与肝性脑病有何关系？",
+        answer: `【上消化道出血→肝性脑病的机制链】
+
+食管静脉曲张破裂出血 → 大量血液进入消化道
+↓
+肠道内蛋白质分解↑ → 氨↑
+↓
+血氨↑ → 肝性脑病
+↓
+出血→低血容量→门脉供血↓→肝功能↓
+↓
+肝性脑病加重
+
+【关键环节】
+• 血液蛋白质→肠道产氨↑
+• 低血容量→肝缺血→肝功能↓
+• 血氨↑→氨对脑的毒性作用
+
+【预防措施】
+• 使用乳果糖酸化肠道
+• 使用抗生素减少肠道产氨
+• 补充白蛋白改善肝功能`
+      },
+      {
+        q: "【病理生理学问题2.3】患者出现腹水，请分析其机制？",
+        answer: `【腹水形成机制】
+
+| 机制 | 内容 |
+|------|------|
+| 【门脉压↑】 | 毛细血管静水压↑→液体漏出至腹腔 |
+| 【血浆胶体渗透压↓】 | ALB↓（肝脏合成↓）→血管内吸水力↓ |
+| 【激素灭活↓】 | 醛固酮↑、ADH↑→钠水潴留 |
+| 【淋巴回流障碍】 | 肝窦压力↑→淋巴生成↑→回流不畅 |
+
+【腹水的特点】
+• 为漏出液（蛋白含量低，<25g/L）
+• 常为中等量或大量腹水
+• 可引起呼吸困难、下肢水肿`
+      },
+      {
+        q: "【生物化学问题3.1】请分析肝硬化时胆红素代谢会出现什么异常？",
+        answer: `【胆红素来源】
+• 衰老红细胞（80%）
+• 无效造血
+• 含铁酶类
+
+【肝硬化时胆红素代谢障碍】
+
+• 肝细胞摄取功能↓→【非结合胆红素】↑
+• 肝细胞结合功能↓→【结合胆红素】↑
+• 肝内胆汁淤积→结合胆红素↑
+
+【实验室表现】
+• TBIL↑
+• 以结合/非结合胆红素升高为主
+• 尿胆红素阳性（结合胆红素↑）
+• 尿胆原可正常或↓（肝细胞处理能力↓）`
+      },
+      {
+        q: "【生物化学问题3.2】患者血氨升高，请分析氨的正常代谢途径？",
+        answer: `【氨的正常代谢】
+
+| 项目 | 内容 |
+|------|------|
+| 【氨的来源】 | 氨基酸脱氨基、肠道产氨、肾脏产氨 |
+| 【氨的运输】 | 丙氨酸-葡萄糖循环（肌肉→肝）、谷氨酰胺（组织→肾/肝） |
+| 【氨的去路】 | 合成尿素（肝脏最主要）、合成谷氨酰胺、生成铵盐 |
+
+【氨代谢的关键酶】
+• 氨基甲酰磷酸合成酶I（CPS I）：启动鸟氨酸循环
+• 精氨酸代琥珀酸合成酶：合成尿素
+
+【肝性脑病时】
+肝脏合成尿素功能障碍→氨代谢障碍→血氨↑→氨中毒`
+      },
+      {
+        q: "【生物化学问题3.3】请分析短期饥饿（1-3天）和长期饥饿的代谢特点？",
+        answer: `【短期饥饿（1-3天）】
+
+| 代谢变化 | 具体表现 |
+|----------|----------|
+| 糖原分解 | 早期供能（24-48h耗尽） |
+| 糖异生 | ↑（乳酸、甘油、氨基酸） |
+| 脂肪动员 | ↑↑ |
+| 酮体生成 | ↑↑（脑开始利用酮体） |
+| 蛋白质分解 | 中度↑ |
+
+【长期饥饿（3天以上）】
+
+| 代谢变化 | 具体表现 |
+|----------|----------|
+| 糖异生 | ↑↑（来自蛋白质） |
+| 酮体利用 | 脑主要利用酮体（减少蛋白消耗） |
+| 蛋白质分解 | ↓（保护蛋白质） |
+| 脂肪动员 | ↑↑↑ |
+
+【临床意义】
+饥饿初期靠糖原→糖原耗尽后靠脂肪和蛋白质`
+      },
+      {
+        q: "【生物化学问题3.4】请分析肝脏的生物转化机制？",
+        answer: `【生物转化机制】
+
+【第一相反应】（氧化/还原/水解）
+• 微粒体酶系：最重要的氧化酶系是【细胞色素P450单加氧酶】
+• 反应类型：氧化、还原、水解
+• 特点：使底物极性↑，但可能产生毒性中间产物
+
+【第二相反应】（结合反应）
+• 【葡萄糖醛酸结合】（最常见）— 供体：UDP-葡萄糖醛酸
+• 硫酸结合
+• 谷胱甘肽结合
+• 乙酰化、甲基化、甘氨酸结合
+
+【临床意义】
+• 药物代谢（多数经肝代谢）
+• 毒物解毒
+• 激素灭活（雌激素、醛固酮等）`
+      },
+      {
+        q: "【生物化学问题3.5】患者出现黄疸，请鉴别溶血性黄疸、肝细胞性黄疸、阻塞性黄疸？",
+        answer: `【黄疸鉴别诊断】
+
+| 类型 | 血清胆红素 | 尿胆红素 | 尿胆原 | 粪便颜色 |
+|------|------------|----------|--------|----------|
+| 【溶血性黄疸】 | 非结合胆红素↑↑ | 阴性 | ↑↑ | 深（粪胆素↑） |
+| 【肝细胞性黄疸】 | 结合+非结合↑ | 阳性 | ↓/正常 | 变浅 |
+| 【阻塞性黄疸】 | 结合胆红素↑↑ | 强阳性 | ↓/阴性 | 白陶土样 |
+
+【本病例特点】
+符合肝细胞性黄疸：ALT/AST↑、ALB↓↓、PT延长`
+      },
+      {
+        q: "【药理学问题4.1-1】利尿药选择？",
+        answer: `【利尿药选择】
+
+首选【螺内酯】+【呋塞米】联合
+
+| 药物 | 机制 | 优势 |
+|------|------|------|
+| 【螺内酯】 | 醛固酮受体拮抗剂 | 保钾、减少腹水、抑制醛固酮升高 |
+| 【呋塞米】 | 抑制Na⁺-K⁺-2Cl⁻转运 | 强效利尿、纠正血钾（与螺内酯互补） |
+
+【用法】
+• 螺内酯100mg/d + 呋塞米40mg/d
+• 起始小剂量，逐渐加量
+• 监测电解质和肾功能
+
+【注意】
+肝硬化腹水禁用螺内酯单药（可引起高钾血症）`
+      },
+      {
+        q: "【药理学问题4.1-2】降氨药物选择？",
+        answer: `【降氨药物选择】
+
+| 药物 | 机制 |
+|------|------|
+| 【乳果糖】 | 在结肠被细菌分解→乳酸+醋酸→酸化肠道→NH₃→NH₄⁺→促进排泄 |
+| 【门冬氨酸鸟氨酸（LOLA）】 | 促进氨的代谢（提供鸟氨酸和门冬氨酸） |
+| 【谷氨酸钠/精氨酸】 | 与氨结合生成谷氨酰胺 |
+
+【乳果糖用法】
+• 口服15-30ml，每日3次
+• 调整剂量至每日2-3次软便
+• 副作用：腹胀、腹泻（可耐受）
+
+【注意】
+降氨治疗需结合饮食控制（限制蛋白）和去除诱因`
+      },
+      {
+        q: "【药理学问题4.1-3】保肝药物选择？",
+        answer: `【保肝药物选择】
+
+| 药物 | 作用机制 |
+|------|----------|
+| 【还原型谷胱甘肽】 | 提供-SH基团，抗氧化、解毒，保护肝细胞 |
+| 【甘草酸制剂】 | 抗炎、保肝（类似糖皮质激素作用） |
+| 【水飞蓟素】 | 稳定肝细胞膜，抗氧化 |
+| 【多烯磷脂酰胆碱】 | 修复肝细胞膜，促进肝细胞再生 |
+| 【熊去氧胆酸】 | 促进胆汁排泄（黄疸时） |
+
+【临床应用】
+常联合使用2-3种保肝药，疗程较长`
+      },
+      {
+        q: "【药理学问题4.1-4】若患者合并感染需使用抗生素，喹诺酮类和青霉素类的作用机制是什么？",
+        answer: `【抗生素作用机制】
+
+| 药物类型 | 作用机制 |
+|----------|----------|
+| 【喹诺酮类】 | 抑制【DNA回旋酶】和【拓扑异构酶IV】→阻碍DNA复制→杀菌 |
+| 【青霉素】 | 抑制【细胞壁合成】（转肽酶→肽聚糖交联障碍）→G⁺作用强，G⁻作用弱 |
+
+【常用药物】
+• 喹诺酮类：左氧氟沙星、莫西沙星
+• 青霉素类：阿莫西林、哌拉西林
+
+【肝病患者用药注意】
+• 避免使用主要经肝脏代谢的药物
+• 注意药物不良反应
+• 监测肝功能`
+      }
+    ]
+  }
+];
+// ========================================
+// 工具函数 - utils.js
+// ========================================
+
+// LocalStorage 封装
+const Storage = {
+  get(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.warn('Storage get failed:', e);
+      return null;
+    }
+  },
+  
+  set(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      console.warn('Storage set failed:', e);
+      return false;
+    }
+  },
+  
+  remove(key) {
+    try {
+      localStorage.removeItem(key);
+      return true;
+    } catch (e) {
+      console.warn('Storage remove failed:', e);
+      return false;
+    }
+  },
+  
+  clear() {
+    try {
+      localStorage.clear();
+      return true;
+    } catch (e) {
+      console.warn('Storage clear failed:', e);
+      return false;
+    }
+  }
+};
+
+// 日期工具
+const DateUtils = {
+  format(date, format = 'YYYY-MM-DD') {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    
+    return format
+      .replace('YYYY', year)
+      .replace('MM', month)
+      .replace('DD', day)
+      .replace('HH', hours)
+      .replace('mm', minutes)
+      .replace('ss', seconds);
+  },
+  
+  isToday(date) {
+    const d = new Date(date);
+    const today = new Date();
+    return d.toDateString() === today.toDateString();
+  },
+  
+  getDaysAgo(days) {
+    const date = new Date();
+    date.setDate(date.getDate() - days);
+    return date.toDateString();
+  }
+};
+
+// 字符串工具
+const StringUtils = {
+  truncate(str, length = 50, suffix = '...') {
+    if (!str || str.length <= length) return str;
+    return str.substring(0, length) + suffix;
+  },
+  
+  escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  },
+  
+  highlight(text, keyword, color = '#FF9C00') {
+    if (!keyword || !text) return text;
+    const regex = new RegExp(`(${keyword})`, 'gi');
+    return text.replace(regex, `<span style="background: ${color}; padding: 0 2px;">$1</span>`);
+  }
+};
+
+// 数组工具
+const ArrayUtils = {
+  chunk(array, size) {
+    const chunks = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunks.push(array.slice(i, i + size));
+    }
+    return chunks;
+  },
+  
+  unique(array) {
+    return [...new Set(array)];
+  },
+  
+  groupBy(array, key) {
+    return array.reduce((result, item) => {
+      const group = typeof key === 'function' ? key(item) : item[key];
+      if (!result[group]) {
+        result[group] = [];
+      }
+      result[group].push(item);
+      return result;
+    }, {});
+  },
+  
+  shuffle(array) {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  }
+};
+
+// 数学工具
+const MathUtils = {
+  clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+  },
+  
+  round(value, decimals = 0) {
+    return Number(value.toFixed(decimals));
+  },
+  
+  average(array) {
+    if (array.length === 0) return 0;
+    return array.reduce((sum, val) => sum + val, 0) / array.length;
+  },
+  
+  percentage(value, total) {
+    if (total === 0) return 0;
+    return Math.round((value / total) * 100);
+  }
+};
+
+// 防抖函数
+function debounce(func, wait = 300) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+// 节流函数
+function throttle(func, limit = 300) {
+  let inThrottle;
+  return function executedFunction(...args) {
+    if (!inThrottle) {
+      func(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}
+
+// 深拷贝
+function deepClone(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+  if (obj instanceof Date) return new Date(obj);
+  if (obj instanceof Array) return obj.map(item => deepClone(item));
+  if (obj instanceof Object) {
+    const copy = {};
+    Object.keys(obj).forEach(key => {
+      copy[key] = deepClone(obj[key]);
+    });
+    return copy;
+  }
+  return obj;
+}
+
+// 生成唯一ID
+function generateId() {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// 判断是否为移动设备
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// 获取设备安全区域
+function getSafeArea() {
+  const style = getComputedStyle(document.documentElement);
+  return {
+    top: parseInt(style.getPropertyValue('--safe-area-inset-top') || '0'),
+    bottom: parseInt(style.getPropertyValue('--safe-area-inset-bottom') || '0'),
+    left: parseInt(style.getPropertyValue('--safe-area-inset-left') || '0'),
+    right: parseInt(style.getPropertyValue('--safe-area-inset-right') || '0')
+  };
+}
+
+// 导出
+window.Storage = Storage;
+window.DateUtils = DateUtils;
+window.StringUtils = StringUtils;
+window.ArrayUtils = ArrayUtils;
+window.MathUtils = MathUtils;
+window.debounce = debounce;
+window.throttle = throttle;
+window.deepClone = deepClone;
+window.generateId = generateId;
+window.isMobile = isMobile;
+window.getSafeArea = getSafeArea;
+// ========================================
+// 可视化图表 - chart.js
+// ========================================
+
+// 环形进度图
+class ProgressRing {
+  constructor(element, options = {}) {
+    this.element = element;
+    this.options = {
+      size: options.size || 80,
+      strokeWidth: options.strokeWidth || 8,
+      color: options.color || '#4A90D9',
+      bgColor: options.bgColor || '#E8E8E8',
+      ...options
+    };
+    
+    this.percent = 0;
+    this.init();
+  }
+  
+  init() {
+    const { size, strokeWidth, bgColor } = this.options;
+    const radius = (size - strokeWidth) / 2;
+    const circumference = 2 * Math.PI * radius;
+    
+    this.element.innerHTML = `
+      <svg width="${size}" height="${size}">
+        <circle class="bg" cx="${size/2}" cy="${size/2}" r="${radius}" stroke="${bgColor}" stroke-width="${strokeWidth}" fill="none"/>
+        <circle class="progress" cx="${size/2}" cy="${size/2}" r="${radius}" stroke="${this.options.color}" stroke-width="${strokeWidth}" fill="none" 
+          stroke-linecap="round" stroke-dasharray="${circumference}" stroke-dashoffset="${circumference}"/>
+      </svg>
+      <div class="text">
+        <div class="percent">0%</div>
+        <div class="label">完成</div>
+      </div>
+    `;
+    
+    this.progressCircle = this.element.querySelector('.progress');
+    this.percentText = this.element.querySelector('.percent');
+    this.circumference = circumference;
+  }
+  
+  setProgress(percent) {
+    this.percent = Math.max(0, Math.min(100, percent));
+    const offset = this.circumference * (1 - this.percent / 100);
+    
+    this.progressCircle.style.strokeDashoffset = offset;
+    this.percentText.textContent = Math.round(this.percent) + '%';
+  }
+}
+
+// 条形进度图
+class ProgressBar {
+  constructor(element, options = {}) {
+    this.element = element;
+    this.options = {
+      height: options.height || 8,
+      color: options.color || '#4A90D9',
+      bgColor: options.bgColor || '#E8E8E8',
+      showText: options.showText !== false,
+      ...options
+    };
+    
+    this.percent = 0;
+    this.init();
+  }
+  
+  init() {
+    this.element.innerHTML = `
+      <div class="bar-track" style="height: ${this.options.height}px; background: ${this.options.bgColor}; border-radius: ${this.options.height/2}px; overflow: hidden;">
+        <div class="bar-fill" style="height: 100%; width: 0%; background: ${this.options.color}; border-radius: ${this.options.height/2}px; transition: width 0.5s ease;"></div>
+      </div>
+      ${this.options.showText ? '<div class="bar-text" style="margin-top: 4px; font-size: 12px; color: #666;"></div>' : ''}
+    `;
+    
+    this.fillElement = this.element.querySelector('.bar-fill');
+    this.textElement = this.element.querySelector('.bar-text');
+  }
+  
+  setProgress(percent, text = '') {
+    this.percent = Math.max(0, Math.min(100, percent));
+    this.fillElement.style.width = this.percent + '%';
+    
+    if (this.textElement && text) {
+      this.textElement.textContent = text;
+    }
+  }
+}
+
+// 柱状图
+class BarChart {
+  constructor(element, options = {}) {
+    this.element = element;
+    this.options = {
+      data: options.data || [],
+      barWidth: options.barWidth || 24,
+      barGap: options.barGap || 8,
+      maxValue: options.maxValue || null,
+      colors: options.colors || ['#4A90D9', '#52C41A', '#FF9C00', '#FF4D4F', '#722ED1', '#13C2C2'],
+      showValues: options.showValues !== false,
+      showLabels: options.showLabels !== false,
+      ...options
+    };
+    
+    this.data = this.options.data;
+    this.init();
+  }
+  
+  init() {
+    this.render();
+  }
+  
+  render() {
+    if (!this.data || this.data.length === 0) {
+      this.element.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无数据</div>';
+      return;
+    }
+    
+    const maxValue = this.options.maxValue || Math.max(...this.data.map(d => d.value));
+    
+    let html = `<div style="display: flex; align-items: flex-end; gap: ${this.options.barGap}px; height: 100%;">`;
+    
+    this.data.forEach((item, index) => {
+      const height = (item.value / maxValue) * 100;
+      const color = typeof item.color === 'string' ? item.color : this.options.colors[index % this.options.colors.length];
+      
+      html += `
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+          ${this.options.showValues ? `<span style="font-size: 11px; color: #666;">${item.value}</span>` : ''}
+          <div style="width: 100%; height: ${height}%; min-height: 4px; background: linear-gradient(to top, ${color}, ${color}aa); border-radius: 4px 4px 0 0; transition: height 0.5s ease;"></div>
+          ${this.options.showLabels ? `<span style="font-size: 10px; color: #999;">${item.label}</span>` : ''}
+        </div>
+      `;
+    });
+    
+    html += '</div>';
+    this.element.innerHTML = html;
+  }
+  
+  setData(data) {
+    this.data = data;
+    this.render();
+  }
+}
+
+// 饼图
+class PieChart {
+  constructor(element, options = {}) {
+    this.element = element;
+    this.options = {
+      size: options.size || 120,
+      data: options.data || [],
+      colors: options.colors || ['#4A90D9', '#52C41A', '#FF9C00', '#FF4D4F', '#722ED1', '#13C2C2'],
+      showLegend: options.showLegend !== false,
+      ...options
+    };
+    
+    this.data = this.options.data;
+    this.init();
+  }
+  
+  init() {
+    this.render();
+  }
+  
+  render() {
+    if (!this.data || this.data.length === 0) {
+      this.element.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无数据</div>';
+      return;
+    }
+    
+    const total = this.data.reduce((sum, item) => sum + item.value, 0);
+    const { size } = this.options;
+    const radius = size / 2;
+    const cx = size / 2;
+    const cy = size / 2;
+    
+    let paths = '';
+    let currentAngle = -90;
+    
+    this.data.forEach((item, index) => {
+      const percentage = total > 0 ? item.value / total : 0;
+      const angle = percentage * 360;
+      const endAngle = currentAngle + angle;
+      
+      if (percentage > 0) {
+        const x1 = cx + radius * Math.cos(currentAngle * Math.PI / 180);
+        const y1 = cy + radius * Math.sin(currentAngle * Math.PI / 180);
+        const x2 = cx + radius * Math.cos(endAngle * Math.PI / 180);
+        const y2 = cy + radius * Math.sin(endAngle * Math.PI / 180);
+        
+        const largeArc = angle > 180 ? 1 : 0;
+        const color = typeof item.color === 'string' ? item.color : this.options.colors[index % this.options.colors.length];
+        
+        if (angle >= 360) {
+          paths += `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="${color}"/>`;
+        } else {
+          paths += `<path d="M${cx},${cy} L${x1},${y1} A${radius},${radius} 0 ${largeArc},1 ${x2},${y2} Z" fill="${color}"/>`;
+        }
+      }
+      
+      currentAngle = endAngle;
+    });
+    
+    let legendHtml = '';
+    if (this.options.showLegend) {
+      legendHtml = '<div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px;">';
+      this.data.forEach((item, index) => {
+        const percentage = total > 0 ? Math.round(item.value / total * 100) : 0;
+        const color = typeof item.color === 'string' ? item.color : this.options.colors[index % this.options.colors.length];
+        legendHtml += `
+          <div style="display: flex; align-items: center; gap: 4px; font-size: 12px;">
+            <span style="width: 10px; height: 10px; border-radius: 2px; background: ${color};"></span>
+            <span style="color: #666;">${item.label}</span>
+            <span style="color: #999;">${percentage}%</span>
+          </div>
+        `;
+      });
+      legendHtml += '</div>';
+    }
+    
+    this.element.innerHTML = `
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <svg width="${size}" height="${size}">${paths}</svg>
+        ${legendHtml}
+      </div>
+    `;
+  }
+  
+  setData(data) {
+    this.data = data;
+    this.render();
+  }
+}
+
+// 导出
+window.ProgressRing = ProgressRing;
+window.ProgressBar = ProgressBar;
+window.BarChart = BarChart;
+window.PieChart = PieChart;
+// ========================================
+// 刷题系统核心逻辑 - app.js
+// ========================================
+
+// 全局状态
+let state = {
+  currentPage: 'homePage',
+  currentSubject: 'all',
+  currentType: 'all',
+  currentMode: 'order',
+  currentQuestionIndex: 0,
+  questions: [],
+  filteredQuestions: [],
+  answeredQuestions: new Set(),
+  correctQuestions: new Set(),
+  wrongQuestions: new Set(),
+  collectedQuestions: new Set(),
+  todayStats: { date: new Date().toDateString(), count: 0 },
+  dailyStats: {},
+  retryMode: false
+};
+
+// 学科配置
+const SUBJECTS = {
+  all: { name: '全部', color: '#4A90D9' },
+  anatomy: { name: '解剖', color: '#4A90D9' },
+  physiology: { name: '生理', color: '#52C41A' },
+  biochemistry: { name: '生化', color: '#FF9C00' },
+  pathology: { name: '病理', color: '#FF4D4F' },
+  pathophys: { name: '病生', color: '#722ED1' },
+  pharmacology: { name: '药理', color: '#13C2C2' }
+};
+
+// 合并所有题目
+function mergeAllQuestions() {
+  const allQuestions = [
+    ...ANATOMY_QUESTIONS,
+    ...PHYSIOLOGY_QUESTIONS,
+    ...BIOCHEMISTRY_QUESTIONS,
+    ...PATHOLOGY_QUESTIONS,
+    ...PATHOPHYS_QUESTIONS,
+    ...PHARMACOLOGY_QUESTIONS
+  ];
+  
+  // 重新编号
+  allQuestions.forEach((q, i) => {
+    q.id = i + 1;
+  });
+  
+  return allQuestions;
+}
+
+// 初始化
+function init() {
+  // 加载数据
+  state.questions = mergeAllQuestions();
+  loadProgress();
+  
+  // 渲染UI
+  renderSubjectTabs();
+  renderSubjectCards();
+  renderProgressBars();
+  renderCasePage();
+  renderErrorList();
+  renderCollectList();
+  renderStats();
+  updateHeader();
+  
+  // 恢复主题
+  const theme = Storage.get('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', theme);
+  updateThemeIcon();
+  
+  // 绑定事件
+  window.addEventListener('beforeunload', saveProgress);
+}
+
+// 渲染学科卡片（首页）
+function renderSubjectCards() {
+  const container = document.getElementById('subjectCards');
+  if (!container) return;
+  
+  const subjectKeys = ['anatomy', 'physiology', 'biochemistry', 'pathology', 'pathophys', 'pharmacology'];
+  const icons = {
+    anatomy: '🦴',
+    physiology: '❤️',
+    biochemistry: '🧬',
+    pathology: '🔬',
+    pathophys: '⚡',
+    pharmacology: '💊'
+  };
+  
+  let html = '';
+  subjectKeys.forEach(key => {
+    const info = SUBJECTS[key];
+    const subjectQuestions = state.questions.filter(q => q.subject === key);
+    const total = subjectQuestions.length;
+    const tagged = subjectQuestions.filter(q => state.correctQuestions.has(q.id) || state.wrongQuestions.has(q.id)).length;
+    const pct = total > 0 ? Math.round((tagged / total) * 100) : 0;
+    
+    html += '<div onclick="startQuiz(\'' + key + '\')" style="background:' + info.color + '15; border:1px solid ' + info.color + '40; border-radius:12px; padding:14px; cursor:pointer; transition:transform 0.2s;" ontouchstart="this.style.transform=\'scale(0.97)\'" ontouchend="this.style.transform=\'scale(1)\'">';
+    html += '<div style="font-size:24px; margin-bottom:6px;">' + icons[key] + '</div>';
+    html += '<div style="font-weight:600; font-size:15px; color:var(--text);">' + info.name + '</div>';
+    html += '<div style="font-size:12px; color:var(--text-secondary); margin-top:4px;">' + tagged + '/' + total + ' 题</div>';
+    html += '<div style="height:4px; background:' + info.color + '30; border-radius:2px; margin-top:8px;">';
+    html += '<div style="height:100%; width:' + pct + '%; background:' + info.color + '; border-radius:2px;"></div>';
+    html += '</div>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+// 开始刷题
+function startQuiz(subject) {
+  state.currentSubject = subject;
+  state.currentType = 'all';
+  state.currentMode = 'order';
+  state.currentQuestionIndex = 0;
+  
+  // 更新学科标签高亮
+  document.querySelectorAll('.tabs .tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.subject === subject);
+  });
+  // 更新题型筛选高亮
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.type === 'all');
+  });
+  // 更新模式高亮
+  document.querySelectorAll('.mode-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.mode === 'order');
+  });
+  
+  filterQuestions();
+  switchPage('quizPage');
+}
+
+// 渲染学科标签
+function renderSubjectTabs() {
+  const container = document.getElementById('subjectTabs');
+  let html = '<div class="tab active" data-subject="all" onclick="selectSubject(\'all\')">全部</div>';
+  
+  Object.entries(SUBJECTS).forEach(([key, value]) => {
+    if (key !== 'all') {
+      html += `<div class="tab" data-subject="${key}" onclick="selectSubject('${key}')">${value.name}</div>`;
+    }
+  });
+  
+  container.innerHTML = html;
+}
+
+// 选择学科
+function selectSubject(subject) {
+  state.currentSubject = subject;
+  
+  // 更新标签样式
+  document.querySelectorAll('.tabs .tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.subject === subject);
+  });
+  
+  filterQuestions();
+  renderQuestion();
+}
+
+// 筛选题目类型
+function filterByType(type) {
+  state.currentType = type;
+  
+  // 更新按钮样式
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === type);
+  });
+  
+  filterQuestions();
+  renderQuestion();
+}
+
+// 设置模式
+function setMode(mode) {
+  state.currentMode = mode;
+  
+  // 更新按钮样式
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+  
+  filterQuestions();
+  renderQuestion();
+}
+
+// 筛选题目
+function filterQuestions() {
+  // 切换筛选时退出重刷模式
+  state.retryMode = false;
+  let filtered = [...state.questions];
+  
+  // 学科筛选
+  if (state.currentSubject !== 'all') {
+    filtered = filtered.filter(q => q.subject === state.currentSubject);
+  }
+  
+  // 类型筛选
+  if (state.currentType !== 'all') {
+    filtered = filtered.filter(q => q.type === state.currentType);
+  }
+  
+  // 随机/顺序
+  if (state.currentMode === 'random') {
+    filtered = shuffleArray(filtered);
+  }
+  
+  state.filteredQuestions = filtered;
+  state.currentQuestionIndex = 0;
+  
+  // 自动跳到第一个未答过的题，如果全部做完则从第一题开始
+  var index = 0;
+  while (index < filtered.length && state.answeredQuestions.has(filtered[index].id)) {
+    index++;
+  }
+  if (index >= filtered.length) {
+    index = 0;
+  }
+  state.currentQuestionIndex = index;
+  
+  renderQuestion();
+}
+
+// 渲染题目
+function renderQuestion() {
+  const container = document.getElementById('questionContainer');
+  
+  if (state.filteredQuestions.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg><h4>暂无题目</h4><p>请选择其他筛选条件</p></div>';
+    return;
+  }
+  
+  const q = state.filteredQuestions[state.currentQuestionIndex];
+  const subjectColor = SUBJECTS[q.subject]?.color || '#4A90D9';
+  const isCollected = state.collectedQuestions.has(q.id);
+  const isAnswered = state.answeredQuestions.has(q.id);
+  
+  // 设置答案是否已显示的初始状态：未答过的题不需要显示答案，已答过的题默认也不显示（需要点按钮）
+  state.answerRevealed = false;
+  
+  let optionsHtml = '';
+  
+  if (q.type === 'choice') {
+    q.options.forEach((opt, i) => {
+      const letter = String.fromCharCode(65 + i);
+      var disabledClass = isAnswered ? 'disabled' : '';
+      optionsHtml += '<div class="option ' + disabledClass + '" data-option="' + letter + '" onclick="selectOption(\'' + letter + '\')"><span class="letter">' + letter + '</span><span>' + opt + '</span></div>';
+    });
+  } else {
+    var judgeDisabledClass = isAnswered ? 'disabled' : '';
+    optionsHtml = '<div class="judge-options"><div class="judge-option ' + judgeDisabledClass + '" data-value="true" onclick="selectJudge(true)">✓ 正确</div><div class="judge-option ' + judgeDisabledClass + '" data-value="false" onclick="selectJudge(false)">✗ 错误</div></div>';
+  }
+  
+  const starsHtml = Array(3).fill(0).map((_, i) => '<span class="star ' + (i < q.stars ? '' : 'empty') + '">★</span>').join('');
+  
+  // 未刷标签
+  var notDoneTag = '';
+  if (!isAnswered) {
+    notDoneTag = '<span class="not-done-tag">未刷</span>';
+  }
+  
+  // 显示答案按钮（仅已答过且未显示答案时显示）
+  var revealBtn = '';
+  if (isAnswered && !state.answerRevealed) {
+    revealBtn = '<button class="action-btn reveal-btn" onclick="revealAnswer()">👁 显示答案</button>';
+  }
+  
+  container.innerHTML = '<div class="question-card"><div class="question-header"><span class="question-subject" style="background: ' + subjectColor + '">' + (SUBJECTS[q.subject]?.name || q.subject) + '</span><span class="question-id">' + notDoneTag + (state.currentQuestionIndex + 1) + ' / ' + state.filteredQuestions.length + '</span></div><div class="question-stars">' + starsHtml + '</div><div class="question-content">' + q.question + '</div><div class="options">' + optionsHtml + '</div><div class="action-buttons">' + revealBtn + '<button class="action-btn ' + (isCollected ? 'collected' : 'secondary') + '" onclick="toggleCollect(' + q.id + ')">' + (isCollected ? '★ 已收藏' : '☆ 收藏') + '</button><button class="action-btn" style="background:#FF9C00; color:white;" onclick="markDontKnow(' + q.id + ')" ' + (isAnswered ? 'disabled style="display:none"' : '') + '>🤔 不会</button><button class="action-btn secondary" onclick="prevQuestion()" ' + (state.currentQuestionIndex === 0 ? 'disabled' : '') + '>← 上一题</button><button class="action-btn primary" onclick="nextQuestion()" ' + (state.currentQuestionIndex >= state.filteredQuestions.length - 1 ? 'disabled' : '') + '>下一题 →</button></div></div>';
+  
+  // 未答过的题不自动显示答案，已答过的题需要点"显示答案"按钮
+}
+
+// 手动显示答案（已答过的题点击按钮时调用）
+function revealAnswer() {
+  var q = state.filteredQuestions[state.currentQuestionIndex];
+  state.answerRevealed = true;
+  // 判断之前是否做错
+  var wasWrong = state.wrongQuestions.has(q.id);
+  showAnswer(q, wasWrong ? 'previousWrong' : null);
+  // 替换显示答案按钮为已显示状态
+  var revealBtn = document.querySelector('.reveal-btn');
+  if (revealBtn) {
+    revealBtn.textContent = '✓ 答案已显示';
+    revealBtn.disabled = true;
+    revealBtn.style.opacity = '0.6';
+  }
+}
+
+// 选择选项
+function selectOption(letter) {
+  const q = state.filteredQuestions[state.currentQuestionIndex];
+  
+  if (state.answeredQuestions.has(q.id) && !state.retryMode) return;
+  
+  // 标记已答
+  state.answeredQuestions.add(q.id);
+  
+  // 记录今日统计
+  recordTodayStat();
+  
+  // 判断对错，更新标签（互斥：correctQuestions / wrongQuestions）
+  const isCorrect = letter === q.answer;
+  if (isCorrect) {
+    state.correctQuestions.add(q.id);
+    if (state.wrongQuestions.has(q.id)) {
+      state.wrongQuestions.delete(q.id);
+      showToast('✓ 答对了！已从错题本移出');
+    }
+  } else {
+    state.wrongQuestions.add(q.id);
+    state.correctQuestions.delete(q.id);
+  }
+  
+  // 更新UI
+  document.querySelectorAll('.option').forEach(opt => {
+    opt.classList.add('disabled');
+    if (opt.dataset.option === letter) {
+      opt.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+    if (opt.dataset.option === q.answer) {
+      opt.classList.add('correct');
+    }
+  });
+  
+  showAnswer(q, isCorrect ? null : letter);
+  updateHeader();
+  saveProgress();
+}
+
+// 选择判断
+function selectJudge(value) {
+  const q = state.filteredQuestions[state.currentQuestionIndex];
+  
+  if (state.answeredQuestions.has(q.id) && !state.retryMode) return;
+  
+  // 标记已答
+  state.answeredQuestions.add(q.id);
+  
+  // 记录今日统计
+  recordTodayStat();
+  
+  // 判断对错，更新标签（互斥：correctQuestions / wrongQuestions）
+  const isCorrect = value === q.answer;
+  if (isCorrect) {
+    state.correctQuestions.add(q.id);
+    if (state.wrongQuestions.has(q.id)) {
+      state.wrongQuestions.delete(q.id);
+      showToast('✓ 答对了！已从错题本移出');
+    }
+  } else {
+    state.wrongQuestions.add(q.id);
+    state.correctQuestions.delete(q.id);
+  }
+  
+  // 更新UI
+  document.querySelectorAll('.judge-option').forEach(opt => {
+    opt.classList.add('disabled');
+    if (opt.dataset.value === String(value)) {
+      opt.classList.add(isCorrect ? 'correct' : 'wrong');
+    }
+    if (opt.dataset.value === String(q.answer)) {
+      opt.classList.add('correct');
+    }
+  });
+  
+  showAnswer(q, isCorrect ? null : value);
+  updateHeader();
+  saveProgress();
+}
+
+// 显示答案
+function showAnswer(q, userAnswer = null) {
+  const card = document.querySelector('.question-card');
+  let resultText = '';
+  
+  if (q.type === 'choice') {
+    const correctLetter = q.answer;
+    resultText = `正确答案：${correctLetter}. ${q.options[correctLetter.charCodeAt(0) - 65]}`;
+  } else {
+    resultText = `正确答案：${q.answer ? '正确' : '错误'}`;
+  }
+  
+  const isCorrect = userAnswer === null || userAnswer === undefined;
+  
+  const analysisHtml = `
+    <div class="analysis">
+      <div class="analysis-title">💡 解析</div>
+      <div class="analysis-content">${q.analysis}</div>
+      <div class="analysis-result ${isCorrect ? 'correct' : 'wrong'}">
+        ${isCorrect ? '✓ 回答正确' : (userAnswer === 'previousWrong' ? '✗ 之前答错' : `✗ 回答错误${userAnswer !== null ? ` (选择了${q.type === 'choice' ? userAnswer : (userAnswer ? '正确' : '错误')})` : ''}`)}
+      </div>
+      <div style="margin-top: 10px; font-size: 14px; color: #52C41A;">
+        ${resultText}
+      </div>
+    </div>
+  `;
+  
+  // 移除旧的analysis
+  const oldAnalysis = card.querySelector('.analysis');
+  if (oldAnalysis) oldAnalysis.remove();
+  
+  // 插入新的analysis
+  const optionsEl = card.querySelector('.options');
+  optionsEl.insertAdjacentHTML('afterend', analysisHtml);
+}
+
+// 上一题
+function prevQuestion() {
+  if (state.currentQuestionIndex > 0) {
+    state.currentQuestionIndex--;
+    renderQuestion();
+  }
+}
+
+// 下一题
+function nextQuestion() {
+  if (state.currentQuestionIndex < state.filteredQuestions.length - 1) {
+    state.currentQuestionIndex++;
+    renderQuestion();
+  }
+}
+
+// 收藏切换
+function toggleCollect(id) {
+  if (state.collectedQuestions.has(id)) {
+    state.collectedQuestions.delete(id);
+    showToast('已取消收藏');
+  } else {
+    state.collectedQuestions.add(id);
+    showToast('已添加收藏');
+  }
+  saveProgress();
+  renderQuestion();
+  renderCollectList();
+}
+
+// 渲染进度条
+function renderProgressBars() {
+  const container = document.getElementById('progressBars');
+  let html = '';
+  
+  const subjectKeys = ['anatomy', 'physiology', 'biochemistry', 'pathology', 'pathophys', 'pharmacology'];
+  
+  subjectKeys.forEach(key => {
+    const subjectQuestions = state.questions.filter(q => q.subject === key);
+    const total = subjectQuestions.length;
+    const tagged = subjectQuestions.filter(q => state.correctQuestions.has(q.id) || state.wrongQuestions.has(q.id)).length;
+    const percent = total > 0 ? Math.round((tagged / total) * 100) : 0;
+    const color = SUBJECTS[key].color;
+    
+    html += `
+      <div class="progress-bar-item">
+        <span class="dot" style="background: ${color}"></span>
+        <span class="bar">
+          <span class="bar-fill" style="width: ${percent}%; background: ${color}"></span>
+        </span>
+        <span class="count">${tagged}/${total}</span>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// 渲染大题页面
+function renderCasePage() {
+  const container = document.getElementById('caseList');
+  
+  let html = '';
+  CASE_QUESTIONS.forEach((caseItem, caseIndex) => {
+    const subjectsHtml = caseItem.subjects.map(s => 
+      `<span class="case-subject-tag">${SUBJECTS[s]?.name || s}</span>`
+    ).join('');
+    
+    const questionsHtml = caseItem.questions.map((q, qIndex) => `
+      <div class="case-question">
+        <div class="case-question-title">
+          <span class="num">${qIndex + 1}</span>
+          <span>${q.q}</span>
+        </div>
+        <div class="case-answer-toggle" onclick="toggleCaseAnswer(${caseIndex}, ${qIndex})">
+          <span>点击查看答案</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+        <div class="case-answer" id="caseAnswer${caseIndex}_${qIndex}">
+          ${q.answer}
+        </div>
+      </div>
+    `).join('');
+    
+    html += `
+      <div class="case-card">
+        <div class="case-header">
+          <h3>📋 ${caseItem.title}</h3>
+          <div class="case-subjects">${subjectsHtml}</div>
+        </div>
+        <div class="case-body">
+          <div class="case-description">${caseItem.caseDescription}</div>
+          ${questionsHtml}
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// 切换案例答案显示
+function toggleCaseAnswer(caseIndex, qIndex) {
+  const answerEl = document.getElementById(`caseAnswer${caseIndex}_${qIndex}`);
+  const toggleEl = answerEl.previousElementSibling;
+  
+  answerEl.classList.toggle('show');
+  toggleEl.classList.toggle('expanded');
+}
+
+// 渲染错题列表
+function renderErrorList() {
+  const container = document.getElementById('errorList');
+  const countEl = document.getElementById('errorCount');
+  const badgeEl = document.getElementById('errorBadge');
+  
+  const errors = state.questions.filter(q => state.wrongQuestions.has(q.id));
+  
+  countEl.textContent = errors.length + ' 题';
+  
+  if (errors.length > 0) {
+    badgeEl.textContent = errors.length;
+    badgeEl.style.display = 'flex';
+  } else {
+    badgeEl.style.display = 'none';
+  }
+  
+  if (errors.length === 0) {
+    container.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg><h4>太棒了！</h4><p>暂无错题，继续保持</p></div>';
+    return;
+  }
+  
+  var html = '';
+  errors.forEach(function(q) {
+    var subjectColor = SUBJECTS[q.subject]?.color || '#4A90D9';
+    html += '<div class="list-item" onclick="retrySingleError(' + q.id + ')">';
+    html += '<div class="list-item-header"><span class="question-subject" style="background: ' + subjectColor + '">' + (SUBJECTS[q.subject]?.name || q.subject) + '</span><span class="question-id">#' + q.id + '</span></div>';
+    html += '<div class="list-item-content">' + q.question + '</div>';
+    html += '<div class="list-item-footer"><span>' + (q.type === 'choice' ? '选择题' : '判断题') + '</span><span onclick="event.stopPropagation(); removeFromErrors(' + q.id + ')" style="color: #FF4D4F; font-weight: 600;">移出错题本</span></div>';
+    html += '</div>';
+  });
+  
+  container.innerHTML = html;
+}
+
+// 渲染收藏列表
+function renderCollectList() {
+  const container = document.getElementById('collectList');
+  const countEl = document.getElementById('collectCount');
+  
+  const collected = state.questions.filter(q => state.collectedQuestions.has(q.id));
+  
+  countEl.textContent = `${collected.length} 题`;
+  
+  if (collected.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        <h4>暂无收藏</h4>
+        <p>点击题目中的收藏按钮添加</p>
+      </div>
+    `;
+    return;
+  }
+  
+  let html = '';
+  collected.forEach(q => {
+    const subjectColor = SUBJECTS[q.subject]?.color || '#4A90D9';
+    html += `
+      <div class="list-item" onclick="jumpToQuestion(${q.id})">
+        <div class="list-item-header">
+          <span class="question-subject" style="background: ${subjectColor}">${SUBJECTS[q.subject]?.name || q.subject}</span>
+          <span class="question-id">#${q.id}</span>
+        </div>
+        <div class="list-item-content">${q.question}</div>
+        <div class="list-item-footer">
+          <span>${q.type === 'choice' ? '选择题' : '判断题'}</span>
+          <span onclick="event.stopPropagation(); toggleCollect(${q.id})">取消收藏</span>
+        </div>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// 从错题点进去重刷（进入该题页面，允许重新作答）
+function retrySingleError(id) {
+  var q = state.questions.find(function(item) { return item.id === id; });
+  if (!q) return;
+  
+  // 允许重新作答
+  state.answeredQuestions.delete(id);
+  
+  // 设置当前学科和筛选
+  state.currentSubject = q.subject;
+  state.currentType = q.type;
+  state.currentMode = 'order';
+  
+  // 更新UI
+  document.querySelectorAll('.tabs .tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.subject === q.subject);
+  });
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.type === q.type);
+  });
+  document.querySelectorAll('.mode-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.mode === 'order');
+  });
+  
+  // filterQuestions会重置retryMode，所以先调filterQuestions再设retryMode
+  // 手动筛选，不走filterQuestions避免reset
+  var filtered = state.questions.filter(function(item) { return item.subject === q.subject; });
+  if (state.currentType !== 'all') {
+    filtered = filtered.filter(function(item) { return item.type === q.type; });
+  }
+  state.filteredQuestions = filtered;
+  state.currentQuestionIndex = 0;
+  
+  // 自动跳到指定题
+  var index = state.filteredQuestions.findIndex(function(item) { return item.id === id; });
+  if (index !== -1) {
+    state.currentQuestionIndex = index;
+  }
+  
+  // 进入重刷模式（必须在filterQuestions之后设置）
+  state.retryMode = true;
+  
+  renderQuestion();
+  switchPage('quizPage');
+}
+
+// 跳转到指定题目
+function jumpToQuestion(id) {
+  const q = state.questions.find(q => q.id === id);
+  if (!q) return;
+  
+  state.currentSubject = q.subject;
+  state.currentType = q.type;
+  state.currentMode = 'order';
+  
+  // 更新UI
+  document.querySelectorAll('.tabs .tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.subject === q.subject);
+  });
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.type === q.type);
+  });
+  document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === 'order');
+  });
+  
+  filterQuestions();
+  
+  const index = state.filteredQuestions.findIndex(q => q.id === id);
+  if (index !== -1) {
+    state.currentQuestionIndex = index;
+  }
+  
+  renderQuestion();
+  switchPage('quizPage');
+}
+
+// 从错题中移除（标签改为"对"）
+function removeFromErrors(id) {
+  state.wrongQuestions.delete(id);
+  state.correctQuestions.add(id);
+  saveProgress();
+  renderErrorList();
+  updateHeader();
+  showToast('已从错题本移除，标记为正确');
+}
+
+// 标记"不会"
+function markDontKnow(id) {
+  const q = state.filteredQuestions[state.currentQuestionIndex];
+  if (state.answeredQuestions.has(q.id) && !state.retryMode) return;
+  
+  // 标记已答
+  state.answeredQuestions.add(q.id);
+  // 记入错题（标签改为"错"）
+  state.wrongQuestions.add(q.id);
+  state.correctQuestions.delete(q.id);
+  recordTodayStat();
+  
+  // 显示正确答案和解析
+  if (q.type === 'choice') {
+    document.querySelectorAll('.option').forEach(function(opt) {
+      opt.classList.add('disabled');
+      if (opt.dataset.option === q.answer) {
+        opt.classList.add('correct');
+      }
+    });
+  } else {
+    document.querySelectorAll('.judge-option').forEach(function(opt) {
+      opt.classList.add('disabled');
+      if (opt.dataset.value === String(q.answer)) {
+        opt.classList.add('correct');
+      }
+    });
+  }
+  
+  showAnswer(q, 'dontKnow');
+  updateHeader();
+  saveProgress();
+  
+  // 隐藏"不会"按钮
+  var btns = document.querySelectorAll('.action-btn');
+  btns.forEach(function(btn) {
+    if (btn.textContent.indexOf('不会') !== -1) {
+      btn.style.display = 'none';
+    }
+  });
+}
+
+// 一键重刷错题
+function retryErrors() {
+  if (state.wrongQuestions.size === 0) {
+    showToast('没有错题可重刷');
+    return;
+  }
+  
+  // 筛选出所有错题
+  var errorQuestions = state.questions.filter(function(q) {
+    return state.wrongQuestions.has(q.id);
+  });
+  
+  // 进入重刷模式：允许重新作答已答过的题
+  state.retryMode = true;
+  
+  // 把这些题从answeredQuestions中移除，以便重新作答
+  // 注意：不从wrongQuestions移除，答对时自动移除并加入correctQuestions
+  errorQuestions.forEach(function(q) {
+    state.answeredQuestions.delete(q.id);
+  });
+  
+  // 设置筛选为全部学科、顺序模式
+  state.filteredQuestions = errorQuestions;
+  state.currentQuestionIndex = 0;
+  state.currentSubject = 'all';
+  state.currentType = 'all';
+  state.currentMode = 'order';
+  
+  // 更新UI
+  document.querySelectorAll('.tabs .tab').forEach(function(tab) {
+    tab.classList.toggle('active', tab.dataset.subject === 'all');
+  });
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.type === 'all');
+  });
+  document.querySelectorAll('.mode-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.mode === 'order');
+  });
+  
+  renderQuestion();
+  switchPage('quizPage');
+  showToast('开始重刷 ' + errorQuestions.length + ' 道错题，答对自动移出！');
+}
+
+// 渲染统计页面
+function renderStats() {
+  // 基本统计：已完成=有标签的题，正确率=correct/total
+  const totalQuestions = state.questions.length;
+  const tagged = state.correctQuestions.size + state.wrongQuestions.size;
+  const totalCorrect = state.correctQuestions.size;
+  const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+  const completion = totalQuestions > 0 ? Math.round((tagged / totalQuestions) * 100) : 0;
+  
+  document.getElementById('statTotal').textContent = completion + '%';
+  document.getElementById('statCorrect').textContent = totalCorrect;
+  document.getElementById('statAccuracy').textContent = accuracy + '%';
+  document.getElementById('statToday').textContent = tagged + '/' + totalQuestions;
+  
+  // 各科正确率图表
+  renderSubjectChart();
+}
+
+// 渲染学科图表
+function renderSubjectChart() {
+  const container = document.getElementById('subjectChart');
+  let html = '';
+  
+  const subjectKeys = ['anatomy', 'physiology', 'biochemistry', 'pathology', 'pathophys', 'pharmacology'];
+  
+  subjectKeys.forEach(key => {
+    const subjectQuestions = state.questions.filter(q => q.subject === key);
+    const total = subjectQuestions.length;
+    const tagged = subjectQuestions.filter(q => state.correctQuestions.has(q.id) || state.wrongQuestions.has(q.id)).length;
+    const correct = subjectQuestions.filter(q => state.correctQuestions.has(q.id)).length;
+    const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0;
+    const color = SUBJECTS[key].color;
+    const barWidth = total > 0 ? (tagged / total) * 100 : 0;
+    
+    html += `
+      <div class="subject-row">
+        <span class="label">${SUBJECTS[key].name}</span>
+        <div class="bar-container">
+          <div class="bar" style="width: ${barWidth}%; background: ${color};">
+            ${tagged > 0 ? `<span class="text">${correct}/${tagged}</span>` : ''}
+          </div>
+        </div>
+        <span class="percent" style="color: ${color}">${accuracy}%</span>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// 确认重置进度
+function confirmResetProgress() {
+  if (confirm('确定要重置全部进度吗？所有做题记录、错题、收藏将被清空，不可恢复！')) {
+    resetProgress();
+  }
+}
+
+// 重置全部进度
+function resetProgress() {
+  state.answeredQuestions = new Set();
+  state.correctQuestions = new Set();
+  state.wrongQuestions = new Set();
+  state.collectedQuestions = new Set();
+  state.todayStats = { date: new Date().toDateString(), count: 0 };
+  state.dailyStats = {};
+  state.currentQuestionIndex = 0;
+  state.answerRevealed = false;
+  state.retryMode = false;
+  
+  Storage.remove('progress');
+  
+  renderSubjectCards();
+  renderProgressBars();
+  renderErrorList();
+  renderCollectList();
+  renderStats();
+  updateHeader();
+  
+  showToast('已重置全部进度');
+}
+
+// 渲染每日图表
+function renderDailyChart() {
+  const container = document.getElementById('dailyChart');
+  const days = 7;
+  const chartData = [];
+  
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toDateString();
+    const dayData = state.dailyStats[dateStr] || { count: 0 };
+    chartData.push({
+      date: date.getDate() + '日',
+      count: dayData.count
+    });
+  }
+  
+  const maxCount = Math.max(...chartData.map(d => d.count), 1);
+  
+  let html = '';
+  chartData.forEach(d => {
+    const height = (d.count / maxCount) * 120;
+    html += `
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <div style="width: 100%; height: ${height}px; min-height: 4px; background: linear-gradient(to top, var(--primary), #6B5DD3); border-radius: 4px 4px 0 0;"></div>
+        <span style="font-size: 10px; color: var(--text-secondary);">${d.date}</span>
+        <span style="font-size: 10px; color: var(--text);">${d.count}</span>
+      </div>
+    `;
+  });
+  
+  container.innerHTML = html;
+}
+
+// 记录今日统计（仅计数活动次数，正确率由标签计算）
+function recordTodayStat() {
+  const today = new Date().toDateString();
+  
+  if (state.todayStats.date !== today) {
+    // 新的一天，保存昨天的数据
+    state.dailyStats[state.todayStats.date] = {
+      count: state.todayStats.count
+    };
+    
+    // 重置今日统计
+    state.todayStats = { date: today, count: 0 };
+  }
+  
+  state.todayStats.count++;
+}
+
+// 更新头部统计
+function updateHeader() {
+  const totalQuestions = state.questions.length;
+  // 已完成 = 有标签的题（correctQuestions + wrongQuestions）
+  const tagged = state.correctQuestions.size + state.wrongQuestions.size;
+  const totalCorrect = state.correctQuestions.size;
+  const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+  
+  document.getElementById('totalQuestions').textContent = totalQuestions;
+  document.getElementById('todayCount').textContent = tagged + '/' + totalQuestions;
+  document.getElementById('accuracy').textContent = accuracy + '%';
+  
+  // 更新环形进度
+  const progress = totalQuestions > 0 ? (tagged / totalQuestions) : 0;
+  const circumference = 2 * Math.PI * 32;
+  const offset = circumference * (1 - progress);
+  
+  document.getElementById('mainProgress').style.strokeDashoffset = offset;
+  document.getElementById('mainProgress').style.stroke = '#4A90D9';
+  document.getElementById('mainPercent').textContent = Math.round(progress * 100) + '%';
+  
+  // 更新进度条
+  renderProgressBars();
+}
+
+// 切换页面
+function switchPage(pageName) {
+  state.currentPage = pageName;
+  
+  // 更新导航 - 首页tab在homePage和quizPage都高亮
+  document.querySelectorAll('.nav-item').forEach(item => {
+    var p = item.dataset.page;
+    var isActive = (p === pageName) || (p === 'homePage' && pageName === 'quizPage');
+    item.classList.toggle('active', isActive);
+  });
+  
+  // 更新页面显示
+  document.querySelectorAll('.page').forEach(page => {
+    page.classList.toggle('active', page.id === pageName);
+  });
+  
+  // 刷新页面数据
+  if (pageName === 'homePage') {
+    renderSubjectCards();
+    renderProgressBars();
+    updateHeader();
+  } else if (pageName === 'quizPage') {
+    filterQuestions();
+  } else if (pageName === 'errorPage') {
+    renderErrorList();
+  } else if (pageName === 'collectPage') {
+    renderCollectList();
+  } else if (pageName === 'statsPage') {
+    renderStats();
+  }
+}
+
+// 切换主题
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  Storage.set('theme', newTheme);
+  updateThemeIcon();
+}
+
+// 更新主题图标
+function updateThemeIcon() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const icon = document.getElementById('themeIcon');
+  
+  if (isDark) {
+    icon.innerHTML = '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
+  } else {
+    icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+  }
+}
+
+// Toast提示
+var toastTimer = null;
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (toastTimer) clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.classList.add('show');
+  
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+    toastTimer = null;
+  }, 1000);
+}
+
+// 工具函数：打乱数组
+function shuffleArray(array) {
+  const newArray = [...array];
+  for (let i = newArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+  }
+  return newArray;
+}
+
+// 保存进度
+function saveProgress() {
+  const data = {
+    answeredQuestions: Array.from(state.answeredQuestions),
+    correctQuestions: Array.from(state.correctQuestions),
+    wrongQuestions: Array.from(state.wrongQuestions),
+    collectedQuestions: Array.from(state.collectedQuestions),
+    todayStats: state.todayStats,
+    dailyStats: state.dailyStats
+  };
+  
+  Storage.set('progress', JSON.stringify(data));
+}
+
+// 加载进度
+function loadProgress() {
+  try {
+    const data = JSON.parse(Storage.get('progress') || '{}');
+    
+    if (data.answeredQuestions) {
+      state.answeredQuestions = new Set(data.answeredQuestions);
+    }
+    if (data.correctQuestions) {
+      state.correctQuestions = new Set(data.correctQuestions);
+    } else {
+      // 兼容旧版数据：没有correctQuestions的，从answeredQuestions和wrongQuestions推导
+      if (data.answeredQuestions && data.wrongQuestions) {
+        var wrongSet = new Set(data.wrongQuestions);
+        data.answeredQuestions.forEach(function(id) {
+          if (!wrongSet.has(id)) {
+            state.correctQuestions.add(id);
+          }
+        });
+      }
+    }
+    if (data.wrongQuestions) {
+      state.wrongQuestions = new Set(data.wrongQuestions);
+    }
+    if (data.collectedQuestions) {
+      state.collectedQuestions = new Set(data.collectedQuestions);
+    }
+    if (data.todayStats) {
+      state.todayStats = data.todayStats;
+    }
+    if (data.dailyStats) {
+      state.dailyStats = data.dailyStats;
+    }
+    
+    // 检查是否新的一天
+    const today = new Date().toDateString();
+    if (state.todayStats.date !== today) {
+      // 保存昨天的数据
+      if (state.todayStats.count > 0) {
+        state.dailyStats[state.todayStats.date] = {
+          count: state.todayStats.count
+        };
+      }
+      
+      // 重置今日统计
+      state.todayStats = { date: today, count: 0 };
+    }
+  } catch (e) {
+    console.log('加载进度失败', e);
+  }
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', init);
+
+  // ==================== END OF DATA ====================
+  </script>
+</body>
+</html>
